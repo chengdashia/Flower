@@ -1,42 +1,60 @@
 <template>
-  <MainLayout>
-    <template #sidebar>
-      <SideMenu :menuItems="menuItems" />
-    </template>
-    
-    <template #header>
-      <HeaderBar title="花卉识别系统" :username="username" @command="handleHeaderCommand" />
-    </template>
-    
-    <template #main>
-      <!-- 动态组件区域，根据当前选择的功能模块显示不同内容 -->
-      <component 
-        v-if="currentComponent && currentComponent !== 'home'" 
-        :is="currentComponent"
-      />
-      
-      <!-- 主页内容，当未选择其他功能模块时显示 -->
-      <div v-else>
-        <el-divider>
-          <el-icon><star-filled /></el-icon>
-        </el-divider>
-        
-        <!-- 使用提取出的菊花性状识别组件 -->
-        <JuhuaTrait />
+  <div>
+    <el-row :gutter="20">
+      <el-col :span="12">
+        <div id="app">
+          <!-- 上传图片窗口 -->
+          <ImageUploader 
+            ref="uploader"
+            @upload-success="handleUploadSuccess"
+            @analyze="analyze"
+          />
+          <h3><span id="status">{{ statusMessage }}</span></h3>
+          <el-button type="success" @click="goToHistory">
+            查看识别历史记录
+          </el-button>
+        </div>
+      </el-col>
+
+      <el-col :span="12">
+        <div id="app2">
+          <!-- 识别显示窗口 -->
+          <div id="result">
+            <div v-html="resultHtml" />
+          </div>
+          <BarChart 
+            :categories="chartCategories" 
+            :data="chartData" 
+            title="各种性状的可能性"
+            :style="{ width: '600px', height: '350px' }"
+          />
+        </div>
+      </el-col>
+    </el-row>
+
+    <el-divider>
+      <el-icon><star-filled /></el-icon>
+    </el-divider>
+
+    <el-col>
+      <div id="app3">
+        <v-chart
+          v-for="(option, index) in pieChartOptions"
+          :key="index"
+          :option="option"
+          :autoresize="true"
+          style="width: 400px; height: 400px; margin: 20px auto;"
+        />
       </div>
-    </template>
-  </MainLayout>
+    </el-col>
+  </div>
 </template>
 
 <script setup>
-import { ref, reactive, markRaw, defineAsyncComponent } from 'vue'
+import { ref, reactive } from 'vue'
 import { StarFilled } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import axios from 'axios'
-import { useRouter, useRoute } from 'vue-router'
-import MainLayout from '@/components/layout/MainLayout.vue'
-import HeaderBar from '@/components/layout/HeaderBar.vue'
-import SideMenu from '@/components/layout/SideMenu.vue'
 import ImageUploader from '@/components/common/ImageUploader.vue'
 import BarChart from '@/components/charts/BarChart.vue'
 import { use } from 'echarts/core'
@@ -44,54 +62,9 @@ import { CanvasRenderer } from 'echarts/renderers'
 import { PieChart } from 'echarts/charts'
 import { TitleComponent, TooltipComponent, GridComponent, LegendComponent } from 'echarts/components'
 import VChart from 'vue-echarts'
-import JuhuaTrait from '@/views/JuhuaTrait.vue'
-import CornTrait from '@/views/CornTrait.vue'
-// 导入功能模块组件
-const JuhuaStats = defineAsyncComponent(() => import('@/views/JuhuaStats.vue'))
 
 // 注册必要的组件
 use([CanvasRenderer, PieChart, TitleComponent, TooltipComponent, GridComponent, LegendComponent])
-
-const router = useRouter()
-const route = useRoute()
-
-// 当前显示的组件
-const currentComponent = ref(null)
-
-// 用户信息
-const username = ref('用户')
-
-// 自定义菜单配置，点击菜单项时切换组件而不是跳转路由
-const menuItems = [
-  {
-    title: '识别功能',
-    icon: 'Aim',
-    children: [
-      { index: '1-1', title: '菊花形状识别', action: () => currentComponent.value = null },
-      { index: '1-2', title: '菊花形状统计', action: () => currentComponent.value = markRaw(JuhuaStats) },
-      { index: '1-3', title: '玉米形状识别', action: () => currentComponent.value = markRaw(CornTrait) },
-    ]
-  },
-  {
-    title: '统计中心',
-    icon: 'Menu',
-    children: [
-      { index: '2-1', title: '识别历史', action: () => ElMessage.info('标准比对功能正在开发中') },
-      { index: '2-2', title: '个人中心', action: () => ElMessage.info('个人查询功能正在开发中') },
-    ]
-  }
-];
-
-// 处理头部命令
-const handleHeaderCommand = (command) => {
-  if (command === 'logout') {
-    // 处理登出逻辑
-    window.sessionStorage.removeItem('token')
-    router.push('/login')
-  } else if (command === 'myProfile') {
-    // 处理个人资料逻辑
-  }
-}
 
 // 状态变量
 const statusMessage = ref('')
@@ -101,13 +74,6 @@ const predictions = ref(null)
 const chartCategories = ref([])
 const chartData = ref([])
 const pieChartOptions = ref([])
-const tableData_large3_most = ref([
-  {
-    type: 'medium brown green',
-    grade: '146C',
-    frequency: '3',
-  }
-])
 
 // 处理上传成功
 const handleUploadSuccess = (file) => {
@@ -231,7 +197,7 @@ const analyze = async (formData) => {
       }
     } else {
       statusMessage.value = '识别失败!'
-      ElMessage.error(`识别请求失败: ${error.message}`)
+      ElMessage.error(`识别请求失败: ${result.msg}`)
     }
   } catch (error) {
     console.error('识别请求失败:', error)
