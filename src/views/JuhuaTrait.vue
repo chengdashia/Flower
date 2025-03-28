@@ -15,7 +15,6 @@
           </el-button>
         </div>
       </el-col>
-
       <el-col :span="12">
         <div id="app2">
           <!-- 识别显示窗口 -->
