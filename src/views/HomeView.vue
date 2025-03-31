@@ -13,18 +13,14 @@
           <el-icon><star-filled /></el-icon>
         </el-divider>
       <!-- 动态组件区域，根据当前选择的功能模块显示不同内容 -->
-      <component 
+       <RouterView />
+      <!-- <component 
         v-if="currentComponent && currentComponent !== 'home'" 
         :is="currentComponent"
       />
-      
-      <!-- 主页内容，当未选择其他功能模块时显示 -->
       <div v-else>
-
-        
-        <!-- 使用提取出的菊花性状识别组件 -->
         <JuhuaTrait />
-      </div>
+      </div> -->
     </template>
   </MainLayout>
 </template>
@@ -44,11 +40,13 @@ import { use } from 'echarts/core'
 import { CanvasRenderer } from 'echarts/renderers'
 import { PieChart } from 'echarts/charts'
 import { TitleComponent, TooltipComponent, GridComponent, LegendComponent } from 'echarts/components'
-import VChart from 'vue-echarts'
-import JuhuaTrait from '@/views/JuhuaTrait.vue'
-import CornTrait from '@/views/CornTrait.vue'
+// import VChart from 'vue-echarts'
+// import JuhuaTrait from '@/views/JuhuaTrait.vue'
+// import CornTrait from '@/views/CornTrait.vue'
+// import UserCenter from '@/views/UserCenter.vue'
+// import HistoryView from '@/views/HistoryView.vue'
 // 导入功能模块组件
-const JuhuaStats = defineAsyncComponent(() => import('@/views/JuhuaStats.vue'))
+// const JuhuaStats = defineAsyncComponent(() => import('@/views/JuhuaStats.vue'))
 
 // 注册必要的组件
 use([CanvasRenderer, PieChart, TitleComponent, TooltipComponent, GridComponent, LegendComponent])
@@ -57,31 +55,11 @@ const router = useRouter()
 const route = useRoute()
 
 // 当前显示的组件
-const currentComponent = ref(null)
+// const currentComponent = ref(null)
 
 // 用户信息
 const username = ref('用户')
 
-// 自定义菜单配置，点击菜单项时切换组件而不是跳转路由
-const menuItems = [
-  {
-    title: '识别功能',
-    icon: 'Aim',
-    children: [
-      { index: '1-1', title: '菊花形状识别', action: () => currentComponent.value = null },
-      { index: '1-2', title: '菊花形状统计', action: () => currentComponent.value = markRaw(JuhuaStats) },
-      { index: '1-3', title: '玉米形状识别', action: () => currentComponent.value = markRaw(CornTrait) },
-    ]
-  },
-  {
-    title: '统计中心',
-    icon: 'Menu',
-    children: [
-      { index: '2-1', title: '识别历史', action: () => ElMessage.info('标准比对功能正在开发中') },
-      { index: '2-2', title: '个人中心', action: () => ElMessage.info('个人查询功能正在开发中') },
-    ]
-  }
-];
 
 // 处理头部命令
 const handleHeaderCommand = (command) => {
@@ -90,7 +68,8 @@ const handleHeaderCommand = (command) => {
     window.sessionStorage.removeItem('token')
     router.push('/login')
   } else if (command === 'myProfile') {
-    // 处理个人资料逻辑
+    // 导航到个人中心页面
+    router.push('/user-center')
   }
 }
 

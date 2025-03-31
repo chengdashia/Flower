@@ -168,7 +168,7 @@ const handleImageSelected = async (data) => {
     const result = await juhuaIdentify({
       image: data.imageData
     })
-    console.log(result)
+
     if (result.code === 200) {
       statusMessage.value = '识别完成!'
 
@@ -230,7 +230,7 @@ const handleImageSelected = async (data) => {
         // 识别完成后，重置ImageSelector组件状态，以便下次上传
         if (uploader.value) {
           // 清除文件列表，但保留当前识别结果
-          uploader.value.clearFiles();
+          // uploader.value.clearFiles();
           console.log('已重置上传组件状态，准备下一次上传');
         }
       } else {

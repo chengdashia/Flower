@@ -121,6 +121,7 @@ const handleAvatarSuccess = (response, uploadFile) => {
 
 // 限制上传图片格式和大小
 const beforeAvatarUpload = (rawFile) => {
+  
   const isJpgOrPng = rawFile.type === 'image/jpeg' || rawFile.type === 'image/png'
   if (!isJpgOrPng) {
     ElMessage.error('上传的图片必须是 JPG 或 PNG 格式!')
