@@ -54,15 +54,19 @@
       :before-close="handleDialogClose"
     >
       <div class="image-selection-container">
-        <div class="image-option" :class="{ selected: selectedImage === 'front' }" @click="selectImage('front')">
-          <h3>正面图片</h3>
-          <img v-if="frontImage" :src="frontImage" alt="正面图片" />
-          <div v-else class="no-image">无图片</div>
+        <div class="image-option-wrapper">
+          <h3 class="image-title">正面图片</h3>
+          <div class="image-option" :class="{ selected: selectedImage === 'front' }" @click="selectImage('front')">
+            <img v-if="frontImage" :src="frontImage" alt="正面图片" />
+            <div v-else class="no-image">无图片</div>
+          </div>
         </div>
-        <div class="image-option" :class="{ selected: selectedImage === 'back' }" @click="selectImage('back')">
-          <h3>背面图片</h3>
-          <img v-if="backImage" :src="backImage" alt="背面图片" />
-          <div v-else class="no-image">无图片</div>
+        <div class="image-option-wrapper">
+          <h3 class="image-title">背面图片</h3>
+          <div class="image-option" :class="{ selected: selectedImage === 'back' }" @click="selectImage('back')">
+            <img v-if="backImage" :src="backImage" alt="背面图片" />
+            <div v-else class="no-image">无图片</div>
+          </div>
         </div>
       </div>
       <template #footer>
@@ -601,88 +605,92 @@ button:disabled {
   display: flex;
   justify-content: space-around;
   flex-wrap: wrap;
-  gap: 30px;
-  padding: 10px;
+  gap: 40px;
+  padding: 20px;
+}
+
+.image-option-wrapper {
+  width: 45%;
+  min-width: 300px;
+  text-align: center;
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.image-title {
+  margin: 0 0 15px 0;
+  color: #303133;
+  font-size: 20px;
+  font-weight: 600;
+  position: relative;
+  display: inline-block;
+  padding: 5px 0;
+}
+
+.image-title::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 25%;
+  width: 50%;
+  height: 3px;
+  background: linear-gradient(90deg, #409EFF, #79bbff);
+  border-radius: 3px;
+  transition: all 0.3s;
 }
 
 .image-option {
-  width: 45%;
-  min-width: 300px;
   border: 2px solid #ebeef5;
-  border-radius: 16px;
-  padding: 25px;
+  border-radius: 20px;
+  padding: 30px;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: all 0.3s ease;
   text-align: center;
   background-color: #f9fafc;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
   position: relative;
   overflow: hidden;
 }
 
 .image-option:hover {
   border-color: #409EFF;
-  box-shadow: 0 8px 16px rgba(64, 158, 255, 0.2);
-  transform: translateY(-3px);
+  box-shadow: 0 12px 28px rgba(64, 158, 255, 0.2);
+  transform: translateY(-5px);
 }
 
 .image-option.selected {
   border-color: #409EFF;
   background-color: rgba(64, 158, 255, 0.08);
-  box-shadow: 0 8px 20px rgba(64, 158, 255, 0.3);
+  box-shadow: 0 12px 32px rgba(64, 158, 255, 0.3);
 }
 
-.image-option h3 {
-  margin: 0 0 15px 0;
-  color: #303133;
-  font-size: 18px;
-  font-weight: 600;
-  position: relative;
-  display: inline-block;
-}
 
-.image-option h3::after {
-  content: '';
-  position: absolute;
-  bottom: -5px;
-  left: 25%;
-  width: 50%;
-  height: 2px;
-  background-color: #dcdfe6;
-  transition: all 0.3s;
-}
-
-.image-option.selected h3::after {
-  background-color: #409EFF;
-  width: 70%;
-  left: 15%;
-}
 
 .image-option img {
   max-width: 100%;
-  max-height: 300px;
+  max-height: 350px;
   object-fit: contain;
-  border-radius: 12px;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
   transition: all 0.3s;
   border: 3px solid transparent;
 }
 
 .image-option.selected img {
-  box-shadow: 0 8px 20px rgba(64, 158, 255, 0.25);
+  box-shadow: 0 12px 32px rgba(64, 158, 255, 0.25);
   border: 3px solid #409EFF;
-  transform: scale(1.02);
+  transform: scale(1.03);
 }
 
 .no-image {
-  height: 250px;
+  height: 300px;
   display: flex;
   align-items: center;
   justify-content: center;
   background-color: #f5f7fa;
   color: #909399;
   font-size: 18px;
-  border-radius: 12px;
+  border-radius: 16px;
   border: 2px dashed #dcdfe6;
   position: relative;
   overflow: hidden;
@@ -695,27 +703,76 @@ button:disabled {
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%);
+  background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 100%);
   pointer-events: none;
 }
 
 .dialog-footer {
   display: flex;
   justify-content: flex-end;
-  margin-top: 25px;
-  gap: 15px;
+  margin-top: 30px;
+  gap: 20px;
+}
+
+:deep(.dialog-footer .el-button) {
+  padding: 12px 24px;
+  font-size: 16px;
+  border-radius: 10px;
+  transition: all 0.3s ease;
+  font-weight: 500;
+}
+
+:deep(.dialog-footer .el-button:hover) {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+}
+
+:deep(.dialog-footer .el-button--default) {
+  background-color: #f5f7fa;
+  border-color: #dcdfe6;
+  color: #606266;
+}
+
+:deep(.dialog-footer .el-button--default:hover) {
+  background-color: #e6e8eb;
+  border-color: #c0c4cc;
+  color: #303133;
+}
+
+:deep(.dialog-footer .el-button--primary) {
+  background-color: #409EFF;
+  border-color: #409EFF;
+  box-shadow: 0 4px 12px rgba(64, 158, 255, 0.3);
+}
+
+:deep(.dialog-footer .el-button--primary:hover) {
+  background-color: #66b1ff;
+  border-color: #66b1ff;
+  box-shadow: 0 6px 16px rgba(64, 158, 255, 0.4);
 }
 
 :deep(.el-dialog) {
-  border-radius: 20px;
+  border-radius: 24px;
   overflow: hidden;
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.15);
   border: 1px solid rgba(64, 158, 255, 0.1);
+}
+
+:deep(.el-dialog__close) {
+  font-size: 24px !important;
+  font-weight: bold;
+  color: #606266;
+  transition: all 0.3s;
+}
+
+:deep(.el-dialog__close:hover) {
+  color: #409EFF;
+  transform: rotate(90deg);
 }
 
 :deep(.el-dialog__header) {
   background-color: #f0f7ff;
-  padding: 18px 25px;
+  padding: 20px 30px;
   margin: 0;
   border-bottom: 1px solid #e6effd;
   position: relative;
@@ -734,10 +791,10 @@ button:disabled {
 :deep(.el-dialog__title) {
   font-weight: 700;
   color: #303133;
-  font-size: 20px;
+  font-size: 22px;
   letter-spacing: 0.5px;
   position: relative;
-  padding-left: 15px;
+  padding-left: 20px;
 }
 
 :deep(.el-dialog__title)::before {
@@ -747,19 +804,19 @@ button:disabled {
   top: 50%;
   transform: translateY(-50%);
   width: 4px;
-  height: 20px;
+  height: 24px;
   background: #409EFF;
   border-radius: 2px;
 }
 
 :deep(.el-dialog__body) {
-  padding: 35px;
+  padding: 40px;
   background-color: #fafcff;
 }
 
 :deep(.el-dialog__footer) {
   border-top: 1px solid #e6effd;
-  padding: 18px 25px;
+  padding: 20px 30px;
   background-color: #f9fbff;
 }
 
