@@ -344,12 +344,13 @@ const goToHistory = () => {
 }
 
 .section-title {
-  font-size: 22px;
+  font-size: 24px;
   color: #303133;
-  margin-bottom: 20px;
+  margin-bottom: 25px;
   font-weight: 600;
   position: relative;
-  padding-bottom: 10px;
+  padding-bottom: 12px;
+  letter-spacing: 0.5px;
 }
 
 .section-title::after {
@@ -357,10 +358,11 @@ const goToHistory = () => {
   position: absolute;
   bottom: 0;
   left: 0;
-  width: 60px;
-  height: 3px;
+  width: 70px;
+  height: 4px;
   background: linear-gradient(90deg, #409EFF, #79bbff);
-  border-radius: 3px;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(64, 158, 255, 0.2);
 }
 
 .text-center {
@@ -373,9 +375,9 @@ const goToHistory = () => {
 }
 
 #app {
-  border-radius: 12px;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
-  padding: 25px;
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+  padding: 30px;
   height: 600px;
   text-align: center;
   background-color: #e8f7fa;
@@ -384,17 +386,19 @@ const goToHistory = () => {
   border: 1px solid rgba(0, 0, 0, 0.05);
   display: flex;
   flex-direction: column;
+  position: relative;
+  overflow: hidden;
 }
 
 #app:hover {
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.15);
+  transform: translateY(-3px);
 }
 
 #app2 {
-  border-radius: 12px;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
-  padding: 25px;
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+  padding: 30px;
   text-align: center;
   background-color: #fff5eb;
   margin-right: 10px;
@@ -403,11 +407,13 @@ const goToHistory = () => {
   border: 1px solid rgba(0, 0, 0, 0.05);
   display: flex;
   flex-direction: column;
+  position: relative;
+  overflow: hidden;
 }
 
 #app2:hover {
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.15);
+  transform: translateY(-3px);
 }
 
 #app3 {
@@ -462,25 +468,29 @@ button:disabled {
 
 #result {
   margin-top: 25px;
+  margin-bottom: 10px;
   font-size: 18px;
-  line-height: 1.6;
-  padding: 20px;
-  border-radius: 8px;
+  line-height: 1.4;
+  padding: 10px;
+  border-radius: 16px;
   background-color: rgba(255, 255, 255, 0.7);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  min-height: 150px;
+  display: flex;
+  flex-direction: column;
 }
 
 #result h1 {
-  font-size: 24px;
+  font-size: 22px;
   color: #303133;
-  margin-bottom: 15px;
+  margin-bottom: 10px;
   font-weight: 600;
 }
 
 #result h4 {
-  font-size: 18px;
+  font-size: 16px;
   color: #606266;
-  margin: 15px 0 10px;
+  margin: 10px 0 5px;
   font-weight: 500;
 }
 
@@ -494,45 +504,80 @@ button:disabled {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 200px;
-  background-color: rgba(255, 255, 255, 0.7);
-  border-radius: 8px;
+  height: 280px;
+  background-color: rgba(236, 245, 255, 0.5);
+  border-radius: 16px;
   margin-top: 25px;
+  margin-bottom: 20px; /* 添加底部边距与上传区域保持一致 */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+  border: 2px dashed #a3cfff;
+  transition: all 0.3s;
+  position: relative;
+  overflow: hidden;
 }
 
 .empty-result .el-icon {
-  font-size: 48px;
-  color: #909399;
-  margin-bottom: 15px;
+  font-size: 64px;
+  color: #409EFF;
+  margin-bottom: 20px;
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
+  transition: all 0.3s;
+  animation: pulse 2s infinite ease-in-out;
 }
 
 .empty-result p {
-  font-size: 16px;
-  color: #909399;
+  font-size: 18px;
+  color: #606266;
+  font-weight: 500;
+  margin-bottom: 10px;
+}
+
+.empty-result:hover {
+  border-color: #409EFF;
+  background-color: rgba(236, 245, 255, 0.8);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(64, 158, 255, 0.2);
+}
+
+.empty-result:hover .el-icon {
+  transform: scale(1.1);
 }
 
 .status-container {
-  margin-top: 20px;
+  margin-top: 30px;
+  position: relative;
 }
 
 #status {
   display: inline-block;
-  padding: 8px 16px;
-  border-radius: 20px;
+  padding: 10px 20px;
+  border-radius: 24px;
   background-color: #f5f7fa;
   color: #606266;
-  font-weight: 500;
+  font-weight: 600;
   transition: all 0.3s;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  letter-spacing: 0.5px;
+  font-size: 16px;
 }
 
 #status.success {
   background-color: #f0f9eb;
   color: #67c23a;
+  box-shadow: 0 4px 10px rgba(103, 194, 58, 0.15);
+  animation: fadeIn 0.5s ease-in-out;
 }
 
 #status.error {
   background-color: #fef0f0;
   color: #f56c6c;
+  box-shadow: 0 4px 10px rgba(245, 108, 108, 0.15);
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .pie-charts-section {
@@ -564,13 +609,15 @@ button:disabled {
   width: 45%;
   min-width: 300px;
   border: 2px solid #ebeef5;
-  border-radius: 12px;
-  padding: 20px;
+  border-radius: 16px;
+  padding: 25px;
   cursor: pointer;
   transition: all 0.3s;
   text-align: center;
   background-color: #f9fafc;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+  position: relative;
+  overflow: hidden;
 }
 
 .image-option:hover {
@@ -615,60 +662,105 @@ button:disabled {
   max-width: 100%;
   max-height: 300px;
   object-fit: contain;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
   transition: all 0.3s;
+  border: 3px solid transparent;
 }
 
 .image-option.selected img {
-  box-shadow: 0 6px 16px rgba(64, 158, 255, 0.2);
+  box-shadow: 0 8px 20px rgba(64, 158, 255, 0.25);
+  border: 3px solid #409EFF;
+  transform: scale(1.02);
 }
 
 .no-image {
-  height: 220px;
+  height: 250px;
   display: flex;
   align-items: center;
   justify-content: center;
   background-color: #f5f7fa;
   color: #909399;
-  font-size: 16px;
-  border-radius: 8px;
-  border: 1px dashed #dcdfe6;
+  font-size: 18px;
+  border-radius: 12px;
+  border: 2px dashed #dcdfe6;
+  position: relative;
+  overflow: hidden;
+}
+
+.no-image::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%);
+  pointer-events: none;
 }
 
 .dialog-footer {
   display: flex;
   justify-content: flex-end;
-  margin-top: 20px;
-  gap: 12px;
+  margin-top: 25px;
+  gap: 15px;
 }
 
 :deep(.el-dialog) {
-  border-radius: 16px;
+  border-radius: 20px;
   overflow: hidden;
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(64, 158, 255, 0.1);
 }
 
 :deep(.el-dialog__header) {
-  background-color: #f5f7fa;
-  padding: 15px 20px;
+  background-color: #f0f7ff;
+  padding: 18px 25px;
   margin: 0;
-  border-bottom: 1px solid #ebeef5;
+  border-bottom: 1px solid #e6effd;
+  position: relative;
+}
+
+:deep(.el-dialog__header)::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: linear-gradient(90deg, #409EFF, transparent);
 }
 
 :deep(.el-dialog__title) {
-  font-weight: 600;
+  font-weight: 700;
   color: #303133;
-  font-size: 18px;
+  font-size: 20px;
+  letter-spacing: 0.5px;
+  position: relative;
+  padding-left: 15px;
+}
+
+:deep(.el-dialog__title)::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 4px;
+  height: 20px;
+  background: #409EFF;
+  border-radius: 2px;
 }
 
 :deep(.el-dialog__body) {
-  padding: 30px;
+  padding: 35px;
+  background-color: #fafcff;
 }
 
 :deep(.el-dialog__footer) {
-  border-top: 1px solid #ebeef5;
-  padding: 15px 20px;
+  border-top: 1px solid #e6effd;
+  padding: 18px 25px;
+  background-color: #f9fbff;
 }
 
 /* 响应式调整 */
@@ -677,5 +769,92 @@ button:disabled {
     height: auto;
     min-height: 600px;
   }
+  
+  .image-option {
+    width: 100%;
+    margin-bottom: 20px;
+  }
+  
+  .image-selection-container {
+    flex-direction: column;
+  }
+}
+
+/* 添加动画效果 */
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+}
+
+/* 增强上传区域样式 */
+:deep(.el-upload-dragger) {
+  width: 100%;
+  height: 280px;
+  border: 2px dashed #a3cfff;
+  border-radius: 16px;
+  background-color: rgba(236, 245, 255, 0.5);
+  transition: all 0.3s;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin-top: 25px; /* 与识别结果区域保持一致的顶部边距 */
+  margin-bottom: 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+:deep(.el-upload-dragger:hover) {
+  border-color: #409EFF;
+  background-color: rgba(236, 245, 255, 0.8);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(64, 158, 255, 0.2);
+}
+
+:deep(.el-upload-dragger:hover .el-icon--upload) {
+  transform: scale(1.1);
+}
+
+:deep(.el-icon--upload) {
+  font-size: 64px;
+  color: #409EFF;
+  margin-bottom: 20px;
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
+  transition: all 0.3s;
+}
+
+:deep(.el-upload__text) {
+  font-size: 18px;
+  color: #606266;
+  margin-bottom: 10px;
+}
+
+:deep(.el-upload__text em) {
+  color: #409EFF;
+  font-style: normal;
+  font-weight: 600;
+  text-decoration: underline;
+  padding: 0 4px;
+}
+
+:deep(.el-upload__tip) {
+  font-size: 14px;
+  color: #909399;
+  background-color: rgba(255, 255, 255, 0.7);
+  padding: 6px 12px;
+  border-radius: 20px;
+  display: inline-block;
+  margin-top: 10px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
 }
 </style>
