@@ -222,6 +222,13 @@ const handleImageSelected = async (data) => {
           pieChartOptions.value = parseProbabilities(probabilities.value);
           console.log('处理后的饼图配置:', pieChartOptions.value);
         }
+        
+        // 识别完成后，重置ImageSelector组件状态，以便下次上传
+        if (uploader.value) {
+          // 清除文件列表，但保留当前识别结果
+          uploader.value.clearFiles();
+          console.log('已重置上传组件状态，准备下一次上传');
+        }
       } else {
         ElMessage.error('预测结果为空')
       }
