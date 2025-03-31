@@ -180,7 +180,7 @@ const login = () => {
         if (res.code === 200) {
           ElMessage.success(res.message)
           window.sessionStorage.setItem('token', res.token)
-          router.push('/home')
+          router.push('/')
         }
       }).catch(error => {
         console.log(error);

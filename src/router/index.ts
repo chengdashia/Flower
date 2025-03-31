@@ -3,7 +3,6 @@ import { createRouter, createWebHashHistory } from 'vue-router'
 const router = createRouter({
   history: createWebHashHistory(process.env.BASE_URL),
   routes: [
-
     {
       path: '/',
       name: 'home',
@@ -26,11 +25,6 @@ const router = createRouter({
           name: 'cornTrait',
           component: () => import('../views/CornTrait.vue')
         },
-        // {
-        //   path: '/login',
-        //   name: 'login',
-        //   component: () => import('../views/LoginView.vue')
-        // },
         {
           path: '/user-center',
           name: 'userCenter',
@@ -46,15 +40,27 @@ const router = createRouter({
     {
       path: '/login',
       component: () => import('../views/LoginView.vue')
-    },
-
-    // 如果您已经创建了这些组件，可以取消注释
-    // {
-    //   path: '/flower/statistics',
-    //   name: 'flowerStatistics',
-    //   component: () => import('../views/flower/statistics/FlowerStatistics.vue')
-    // }
+    }
   ]
+})
+
+// 全局前置守卫：在导航被确认之前，检查用户是否已登录
+router.beforeEach((to, from, next) => {
+  // 获取token，判断用户是否已登录
+  const token = window.sessionStorage.getItem('token')
+  
+  // 如果访问的是登录页面，直接放行
+  if (to.path === '/login') {
+    next()
+  } else {
+    // 如果用户已登录，允许访问
+    if (token) {
+      next()
+    } else {
+      // 用户未登录，重定向到登录页面
+      next('/login')
+    }
+  }
 })
 
 export default router

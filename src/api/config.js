@@ -5,7 +5,8 @@ import { ElMessage } from 'element-plus'
 const Service = axios.create({
     // 设置baseURL地址
     // baseURL: 'http://134.175.18.239:5000',
-    baseURL: 'http://127.0.0.1:5000',
+    // baseURL: 'http://127.0.0.1:5000',
+    baseURL: process.env.VUE_APP_API_URL,
     //定义统一的请求头
     headers: {
         'Content-Type': "	application/json;charset=UTF-8"

@@ -19,3 +19,12 @@ export const juhuaIdentify = (data) => {
     data
   })
 }
+export const flowerUpload = (data) => {
+  return request.post({
+    url: '/flower_identify/image',
+    data,
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  })
+}

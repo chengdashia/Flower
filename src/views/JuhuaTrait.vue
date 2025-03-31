@@ -84,7 +84,7 @@
 <script setup>
 import { ref, reactive } from 'vue'
 import { StarFilled, InfoFilled } from '@element-plus/icons-vue'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElNotification } from 'element-plus'
 import axios from 'axios'
 import ImageSelector from '@/components/common/ImageSelector.vue'
 import BarChart from '@/components/charts/BarChart.vue'
@@ -93,6 +93,7 @@ import { CanvasRenderer } from 'echarts/renderers'
 import { PieChart } from 'echarts/charts'
 import { TitleComponent, TooltipComponent, GridComponent, LegendComponent } from 'echarts/components'
 import VChart from 'vue-echarts'
+import { getApiUrl } from '@/utils/env';
 import { juhuaIdentify } from '@/api/modules/flower'
 
 // 注册必要的组件
@@ -114,7 +115,7 @@ const backImage = ref('')
 const selectedImage = ref('')
 const uploader = ref(null)
 
-const action = "http://127.0.0.1:5000/chr_identify/crop"
+const action = `${getApiUrl()}/chr_identify/crop`
 
 // 处理上传成功
 const handleUploadSuccess = (file) => {
@@ -233,8 +234,18 @@ const handleImageSelected = async (data) => {
           // uploader.value.clearFiles();
           console.log('已重置上传组件状态，准备下一次上传');
         }
+        ElNotification({
+            title: '提示',
+            message: '识别成功',
+            type: 'success',
+        })
+
       } else {
-        ElMessage.error('预测结果为空')
+        ElNotification({
+            title: '提示',
+            message: '识别失败',
+            type: 'error',
+        })
       }
     } else {
       statusMessage.value = '识别失败!'
@@ -323,14 +334,13 @@ const parseProbabilities = (probabilities) => {
 // 生成结果 HTML
 const generateResultHtml = (preds, msg) => {
   let html = ''
-  html += `<h1>最终评级结果:</h1><p>${msg || '未知'}</p>`
   html += '<h4>预测结果：</h4>'
 
   Object.entries(preds).forEach(([traitKey, predObj]) => {
     const trait = predObj.trait
     html += `<p>${traitKey} - 类别: ${trait.max_class || '未知'}, 可能性: ${(trait.max_prob * 100).toFixed(2)}%</p>`
   })
-
+ 
   return html
 }
 
@@ -473,13 +483,13 @@ button:disabled {
 #result {
   margin-top: 25px;
   margin-bottom: 10px;
-  font-size: 18px;
+  font-size: 20px;
   line-height: 1.4;
   padding: 10px;
   border-radius: 16px;
   background-color: rgba(255, 255, 255, 0.7);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  min-height: 150px;
+  min-height: 110px;
   display: flex;
   flex-direction: column;
 }

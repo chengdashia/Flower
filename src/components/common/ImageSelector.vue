@@ -46,6 +46,7 @@
 import { ref } from 'vue'
 import { UploadFilled } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
+import { getApiUrl } from '@/utils/env';
 
 const emit = defineEmits(['upload-success', 'analyze', 'image-selected'])
 
@@ -66,7 +67,7 @@ const genFileId = () => {
 defineProps({
   action: {
     type: String,
-    default: "http://127.0.0.1:5000/flower_identify/image"
+    default: () => getApiUrl()
   }
 })
 
@@ -157,9 +158,11 @@ const handleExceed = (files) => {
 
   // 开始上传新文件
   file.uid = genFileId()
-  console.log(file);
+  fileList.value = [file]
+  // console.log(file);
   
   upload.value.handleStart(file)
+  upload.value.submit()
 
   console.log('Exceed limit, new image URL set to:', imageUrl.value)
 }

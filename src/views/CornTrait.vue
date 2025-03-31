@@ -53,7 +53,7 @@
 import { ref, reactive } from 'vue'
 import { StarFilled } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
-import axios from 'axios'
+// import axios from 'axios'
 import ImageUploader from '@/components/common/ImageUploader.vue'
 import BarChart from '@/components/charts/BarChart.vue'
 import { use } from 'echarts/core'
@@ -61,6 +61,7 @@ import { CanvasRenderer } from 'echarts/renderers'
 import { PieChart } from 'echarts/charts'
 import { TitleComponent, TooltipComponent, GridComponent, LegendComponent } from 'echarts/components'
 import VChart from 'vue-echarts'
+import { flowerUpload } from '@/api/modules/flower'
 
 // 注册必要的组件
 use([CanvasRenderer, PieChart, TitleComponent, TooltipComponent, GridComponent, LegendComponent])
@@ -154,19 +155,8 @@ const analyze = async (formData) => {
   }
   
   statusMessage.value = '开始识别，请稍候...'
-  
   try {
-    const response = await axios.post(
-      'http://134.175.18.239:5000/flower_identify/image',
-      formData,
-      {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      }
-    )
-    
-    const result = response.data
+    const result = await flowerUpload(formData)
     
     if (result.code === 200) {
       statusMessage.value = '识别完成!'

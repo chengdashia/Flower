@@ -46,8 +46,9 @@
 import { ref } from 'vue'
 import { UploadFilled } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
-
+import { getApiUrl } from '@/utils/env';
 const emit = defineEmits(['upload-success', 'analyze'])
+console.log(process.env);
 
 const fileList = ref([])
 const imageUrl = ref('')
@@ -56,7 +57,7 @@ const upload = ref()
 defineProps({
   action: {
     type: String,
-    default: "http://127.0.0.1:5000/flower_identify/image"
+    default: () => getApiUrl()
   }
 })
 
@@ -117,6 +118,11 @@ const beforeAvatarUpload = (rawFile) => {
 
 const handleChange = (event) => {
   imageUrl.value = event.url
+}
+
+// 生成唯一文件ID
+const genFileId = () => {
+  return Date.now().toString()
 }
 
 // 超过文件上传限制处理
