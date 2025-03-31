@@ -8,7 +8,7 @@
           <ImageSelector ref="uploader" @upload-success="handleUploadSuccess" @analyze="analyze" :action="action"
             @image-selected="handleImageSelected" />
           <div class="status-container">
-            <h3><span id="status" :class="{'success': statusMessage.includes('完成'), 'error': statusMessage.includes('失败')}">{{ statusMessage }}</span></h3>
+            <h3><span :class="{'success': statusMessage.includes('完成'), 'error': statusMessage.includes('失败')}">{{ statusMessage }}</span></h3>
           </div>
           <!-- <el-button type="success" @click="goToHistory">
             查看识别历史记录
@@ -550,19 +550,6 @@ button:disabled {
 .status-container {
   margin-top: 30px;
   position: relative;
-}
-
-#status {
-  display: inline-block;
-  padding: 10px 20px;
-  border-radius: 24px;
-  background-color: #f5f7fa;
-  color: #606266;
-  font-weight: 600;
-  transition: all 0.3s;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
-  letter-spacing: 0.5px;
-  font-size: 16px;
 }
 
 #status.success {
