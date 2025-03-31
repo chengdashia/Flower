@@ -39,35 +39,6 @@
     >
       识别
     </el-button> -->
-    
-    <!-- 图片选择弹窗 -->
-    <el-dialog
-      v-model="dialogVisible"
-      title="请选择一张图片"
-      width="80%"
-      :before-close="handleDialogClose"
-    >
-      <div class="image-selection-container">
-        <div class="image-option" :class="{ selected: selectedImage === 'front' }" @click="selectImage('front')">
-          <h3>正面图片</h3>
-          <img v-if="frontImage" :src="frontImage" alt="正面图片" />
-          <div v-else class="no-image">无图片</div>
-        </div>
-        <div class="image-option" :class="{ selected: selectedImage === 'back' }" @click="selectImage('back')">
-          <h3>背面图片</h3>
-          <img v-if="backImage" :src="backImage" alt="背面图片" />
-          <div v-else class="no-image">无图片</div>
-        </div>
-      </div>
-      <template #footer>
-        <span class="dialog-footer">
-          <el-button @click="dialogVisible = false">取消</el-button>
-          <el-button type="primary" @click="confirmImageSelection" :disabled="!selectedImage">
-            确定
-          </el-button>
-        </span>
-      </template>
-    </el-dialog>
   </div>
 </template>
 
@@ -82,11 +53,9 @@ const fileList = ref([])
 const imageUrl = ref('')
 const upload = ref()
 
-// 图片选择弹窗相关变量
-const dialogVisible = ref(false)
+// 图片选择弹窗相关变量 - 暴露给父组件使用
 const frontImage = ref('')
 const backImage = ref('')
-const selectedImage = ref('')
 const originalResponse = ref(null)
 
 // 生成唯一文件ID
@@ -128,11 +97,10 @@ const handleAvatarSuccess = (response, uploadFile) => {
       backImage.value = 'data:image/jpeg;base64,' + response.result.back_image
     }
 
-    // 如果有图片，显示选择弹窗
+    // 如果有图片，通知父组件显示选择弹窗
     if (frontImage.value || backImage.value) {
-      dialogVisible.value = true
-      // 默认选择第一个有效的图片
-      selectedImage.value = frontImage.value ? 'front' : (backImage.value ? 'back' : '')
+      // 触发上传成功事件，父组件将处理弹窗显示
+      emit('upload-success', uploadFile)
     } else {
       ElMessage.warning('响应中没有有效的图片数据')
     }
@@ -149,42 +117,6 @@ const handleAvatarSuccess = (response, uploadFile) => {
 
   // 更新文件列表
   fileList.value = [uploadFile]
-  
-  // 触发上传成功事件
-  emit('upload-success', uploadFile)
-}
-
-// 选择图片
-const selectImage = (type) => {
-  selectedImage.value = type
-}
-
-// 确认图片选择
-const confirmImageSelection = () => {
-  if (!selectedImage.value) {
-    ElMessage.warning('请选择一张图片')
-    return
-  }
-  
-  // 获取选中的图片数据
-  const selectedImageData = selectedImage.value === 'front' ? frontImage.value : backImage.value
-  const selectedImageType = selectedImage.value
-  
-  // 触发图片选择事件，传递选中的图片数据和类型
-  console.log(selectedImageData);
-  
-  emit('image-selected', {
-    imageData: selectedImageData,
-  })
-  
-  // 关闭弹窗
-  dialogVisible.value = false
-}
-
-// 处理弹窗关闭
-const handleDialogClose = () => {
-  dialogVisible.value = false
-  selectedImage.value = ''
 }
 
 // 限制上传图片格式和大小
@@ -247,72 +179,63 @@ const analyze = () => {
   }
 }
 
-// 暴露方法给父组件
+// 暴露方法和数据给父组件
 defineExpose({
   clearFiles: () => {
     upload.value?.clearFiles()
     fileList.value = []
     imageUrl.value = ''
-  }
+  },
+  frontImage,
+  backImage,
+  originalResponse
 })
 </script>
 
 <style scoped>
-.image-selection-container {
-  display: flex;
-  justify-content: space-around;
-  flex-wrap: wrap;
-  gap: 20px;
-}
-
-.image-option {
-  width: 45%;
-  min-width: 300px;
-  border: 2px solid #eee;
-  border-radius: 8px;
-  padding: 15px;
-  cursor: pointer;
+/* 上传区域样式优化 */
+:deep(.el-upload-dragger) {
+  width: 100%;
+  height: 220px;
+  border: 2px dashed #d9ecff;
+  border-radius: 12px;
+  background-color: rgba(236, 245, 255, 0.3);
   transition: all 0.3s;
-  text-align: center;
-}
-
-.image-option:hover {
-  border-color: #409EFF;
-  box-shadow: 0 0 10px rgba(64, 158, 255, 0.3);
-}
-
-.image-option.selected {
-  border-color: #409EFF;
-  background-color: rgba(64, 158, 255, 0.1);
-  box-shadow: 0 0 10px rgba(64, 158, 255, 0.5);
-}
-
-.image-option h3 {
-  margin-top: 0;
-  color: #333;
-}
-
-.image-option img {
-  max-width: 100%;
-  max-height: 300px;
-  object-fit: contain;
-  border-radius: 4px;
-}
-
-.no-image {
-  height: 200px;
   display: flex;
-  align-items: center;
+  flex-direction: column;
   justify-content: center;
-  background-color: #f5f7fa;
-  color: #909399;
-  font-size: 16px;
-  border-radius: 4px;
+  align-items: center;
 }
 
-.dialog-footer {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 20px;
+:deep(.el-upload-dragger:hover) {
+  border-color: #409EFF;
+  background-color: rgba(236, 245, 255, 0.5);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.05);
+}
+
+:deep(.el-icon--upload) {
+  font-size: 48px;
+  color: #409EFF;
+  margin-bottom: 16px;
+  filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.1));
+}
+
+:deep(.el-upload__text) {
+  font-size: 16px;
+  color: #606266;
+}
+
+:deep(.el-upload__text em) {
+  color: #409EFF;
+  font-style: normal;
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+:deep(.el-upload__tip) {
+  font-size: 14px;
+  color: #909399;
+  margin-top: 10px;
 }
 </style>
