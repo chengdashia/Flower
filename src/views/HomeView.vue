@@ -9,6 +9,9 @@
     </template>
     
     <template #main>
+      <el-divider>
+          <el-icon><star-filled /></el-icon>
+        </el-divider>
       <!-- 动态组件区域，根据当前选择的功能模块显示不同内容 -->
       <component 
         v-if="currentComponent && currentComponent !== 'home'" 
@@ -17,9 +20,7 @@
       
       <!-- 主页内容，当未选择其他功能模块时显示 -->
       <div v-else>
-        <el-divider>
-          <el-icon><star-filled /></el-icon>
-        </el-divider>
+
         
         <!-- 使用提取出的菊花性状识别组件 -->
         <JuhuaTrait />

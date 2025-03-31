@@ -18,3 +18,5 @@ app.component('v-chart', VChart)
 
 app.mount('#app')
 
+console.log(process.env)
+

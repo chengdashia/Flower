@@ -5,7 +5,7 @@
       v-model:file-list="fileList"
       class="upload-demo"
       drag
-      action="http://127.0.0.1:5000/flower_identify/image"
+      :action="action"
       :on-preview="handlePreview"
       :on-remove="handleRemove"
       list-type="picture"
@@ -52,6 +52,13 @@ const emit = defineEmits(['upload-success', 'analyze'])
 const fileList = ref([])
 const imageUrl = ref('')
 const upload = ref()
+
+defineProps({
+  action: {
+    type: String,
+    default: "http://127.0.0.1:5000/flower_identify/image"
+  }
+})
 
 // 处理图片移除
 const handleRemove = (uploadFile, uploadFiles) => {

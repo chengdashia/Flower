@@ -1,6 +1,6 @@
 <template>
   <el-scrollbar>
-    <el-menu :default-openeds="['1', '2']">
+    <el-menu :default-openeds="['1', '2']" default-active="1-1">
       <el-sub-menu v-for="(item, index) in menuItems" :key="index" :index="(index + 1).toString()">
         <template #title>
           <el-icon>
@@ -36,12 +36,15 @@ interface MenuItem {
   }[];
 }
 
-defineProps({
+const props = defineProps({
   menuItems: {
     type: Array as () => MenuItem[],
     required: true
   }
 });
+
+console.log(props.menuItems);
+
 
 function getIconComponent(iconName: string) {
   const iconMap: Record<string, any> = {

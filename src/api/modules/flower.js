@@ -12,3 +12,10 @@ export const getFlowerStats = () => {
     url: '/flower/stats'
   })
 }
+
+export const juhuaIdentify = (data) => {
+  return request.post({
+    url: '/chr_identify/predict',
+    data
+  })
+}
