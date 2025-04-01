@@ -85,7 +85,6 @@
 import { ref, reactive } from 'vue'
 import { StarFilled, InfoFilled } from '@element-plus/icons-vue'
 import { ElMessage, ElNotification } from 'element-plus'
-import axios from 'axios'
 import ImageSelector from '@/components/common/ImageSelector.vue'
 import BarChart from '@/components/charts/BarChart.vue'
 import { use } from 'echarts/core'
@@ -94,7 +93,7 @@ import { PieChart } from 'echarts/charts'
 import { TitleComponent, TooltipComponent, GridComponent, LegendComponent } from 'echarts/components'
 import VChart from 'vue-echarts'
 import { getApiUrl } from '@/utils/env';
-import { juhuaIdentify } from '@/api/modules/flower'
+import { juhuaIdentify } from '@/api/flower'
 
 // 注册必要的组件
 use([CanvasRenderer, PieChart, TitleComponent, TooltipComponent, GridComponent, LegendComponent])
@@ -911,4 +910,4 @@ button:disabled {
   margin-top: 10px;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
 }
-</style>
+</style>@/api/flower

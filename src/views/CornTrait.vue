@@ -61,7 +61,7 @@ import { CanvasRenderer } from 'echarts/renderers'
 import { PieChart } from 'echarts/charts'
 import { TitleComponent, TooltipComponent, GridComponent, LegendComponent } from 'echarts/components'
 import VChart from 'vue-echarts'
-import { flowerUpload } from '@/api/modules/flower'
+import { flowerUpload } from '@/api/flower'
 
 // 注册必要的组件
 use([CanvasRenderer, PieChart, TitleComponent, TooltipComponent, GridComponent, LegendComponent])
@@ -272,4 +272,4 @@ button:disabled {
   margin-top: 20px;
   font-size: 18px;
 }
-</style>
+</style>@/api/flower

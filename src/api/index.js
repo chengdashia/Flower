@@ -1,6 +1,6 @@
-import * as auth from './modules/auth'
-import * as flower from './modules/flower'
-import * as corn from './modules/corn'
+import * as auth from './auth'
+import * as flower from './flower'
+import * as corn from './corn'
 
 export default {
   auth,

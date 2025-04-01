@@ -1,4 +1,19 @@
-import request from '../request'
+import request from './request'
+
+const loginApi = data => {
+    return request.post({
+        url: '/user/login',
+        data
+    })
+}
+
+const registerApi = data => {
+    return request.post({
+        url: '/user/register',
+        data
+    })
+}
+
 
 // 获取用户信息
 export const getUserInfo = () => {
@@ -44,4 +59,9 @@ export const deleteHistory = (id) => {
     url: '/user/delete-history',
     data: { id }
   })
+}
+
+export default {
+  loginApi,
+  registerApi
 }

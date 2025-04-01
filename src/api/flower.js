@@ -1,4 +1,4 @@
-import request from '../request'
+import request from './request'
 
 export const identifyFlower = data => {
   return request.post({
