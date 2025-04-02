@@ -6,6 +6,7 @@
       class="upload-demo"
       drag
       :action="action"
+      :headers="uploadHeaders"
       :on-preview="handlePreview"
       :on-remove="handleRemove"
       list-type="picture"
@@ -58,6 +59,12 @@ const upload = ref()
 const frontImage = ref('')
 const backImage = ref('')
 const originalResponse = ref(null)
+
+// 设置上传请求头，包含token
+const uploadHeaders = ref({
+  'token': window.sessionStorage.getItem('token') || '',
+  'Authorization': window.sessionStorage.getItem('token') || ''
+})
 
 // 生成唯一文件ID
 const genFileId = () => {

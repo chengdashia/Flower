@@ -183,10 +183,15 @@ const login = () => {
         console.log('login', res)
         if (res.code === 200) {
           ElMessage.success(res.message)
-          window.sessionStorage.setItem('token', res.token)
+          window.sessionStorage.setItem('token', res.data.id)
           router.push('/')
         }
       }).catch(error => {
+        if (error.response && error.response.data) {
+          ElMessage.error(error.response.data.message)
+        } else {
+          ElMessage.error('登录失败，请稍后重试')
+        }
         console.log(error);
       })
     }

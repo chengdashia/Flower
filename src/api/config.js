@@ -9,16 +9,21 @@ const Service = axios.create({
     baseURL: process.env.VUE_APP_API_URL,
     //定义统一的请求头
     headers: {
-        'Content-Type': "	application/json;charset=UTF-8"
+        'Content-Type': "application/json;charset=UTF-8"
     },
     //配置请求超时时间
-    time: 10000
+    timeout: 10000
 })
 
 //请求拦截器
 Service.interceptors.request.use((config) => {
     //配置请求头
     config.headers['Authorization'] = window.sessionStorage.getItem('token') === null ? null : window.sessionStorage.getItem('token')
+    // 添加用户ID到请求头
+    const userID = window.sessionStorage.getItem('token')
+    if (userID) {
+        config.headers['token'] = userID
+    }
     return config
 })
 

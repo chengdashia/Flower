@@ -17,7 +17,7 @@ const registerApi = data => {
 
 // 获取用户信息
 export const getUserInfo = () => {
-  return request.get({
+  return request.post({
     url: '/user/info'
   })
 }
@@ -31,37 +31,17 @@ export const updateUserInfo = (data) => {
 }
 
 // 修改密码
-export const changePassword = (data) => {
+export const updatePassword = (data) => {
   return request.post({
-    url: '/user/change-password',
+    url: '/user/update-password',
     data
-  })
-}
-
-// 获取识别历史记录
-export const getIdentifyHistory = (params) => {
-  return request.get({
-    url: '/user/identify-history',
-    data: params
-  })
-}
-
-// 获取历史记录详情
-export const getHistoryDetail = (id) => {
-  return request.get({
-    url: `/user/identify-history/${id}`
-  })
-}
-
-// 删除历史记录
-export const deleteHistory = (id) => {
-  return request.post({
-    url: '/user/delete-history',
-    data: { id }
   })
 }
 
 export default {
   loginApi,
-  registerApi
+  registerApi,
+  getUserInfo,
+  updateUserInfo,
+  updatePassword
 }

@@ -174,6 +174,7 @@ import { CanvasRenderer } from 'echarts/renderers'
 import { PieChart } from 'echarts/charts'
 import { TitleComponent, TooltipComponent, LegendComponent } from 'echarts/components'
 import VChart from 'vue-echarts'
+import { getIdentifyHistory, getHistoryDetail, deleteHistory } from '@/api/history'
 
 // 注册必要的组件
 use([CanvasRenderer, PieChart, TitleComponent, TooltipComponent, LegendComponent])
@@ -197,101 +198,87 @@ const recordToDeleteId = ref(null)
 // 饼图配置
 const pieChartOptions = ref([])
 
-// 模拟历史记录数据
-const allHistoryRecords = reactive([
-  {
-    id: 1,
-    type: 'juhua',
-    imageUrl: 'https://img.zcool.cn/community/01a0b45af3f64ca801216045469c7f.jpg@1280w_1l_2o_100sh.jpg',
-    time: '2023-05-15 14:30:25',
-    results: [
-      { trait: '性状1', value: '类型A', probability: 95.8 },
-      { trait: '性状2', value: '类型B', probability: 87.3 }
-    ],
-    probabilities: {
-      '性状1': {
-        trait: {
-          '类型A': 0.958,
-          '类型C': 0.032,
-          '类型D': 0.01
-        }
-      },
-      '性状2': {
-        trait: {
-          '类型B': 0.873,
-          '类型E': 0.127
-        }
-      }
-    }
-  },
-  {
-    id: 2,
-    type: 'corn',
-    imageUrl: 'https://img.zcool.cn/community/01f1c65c2a3a1da801203d22704a44.jpg@1280w_1l_2o_100sh.jpg',
-    time: '2023-05-10 09:45:12',
-    results: [
-      { trait: '颜色', value: '黄色', probability: 92.1 },
-      { trait: '形状', value: '椭圆形', probability: 88.5 }
-    ],
-    probabilities: {
-      '颜色': {
-        trait: {
-          '黄色': 0.921,
-          '白色': 0.079
-        }
-      },
-      '形状': {
-        trait: {
-          '椭圆形': 0.885,
-          '圆形': 0.115
-        }
-      }
-    }
-  },
-  {
-    id: 3,
-    type: 'juhua',
-    imageUrl: 'https://img.zcool.cn/community/01f9c05c2a3a1da801203d2272a3f9.jpg@1280w_1l_2o_100sh.jpg',
-    time: '2023-05-05 16:20:38',
-    results: [
-      { trait: '性状1', value: '类型B', probability: 89.2 },
-      { trait: '性状2', value: '类型C', probability: 76.5 }
-    ],
-    probabilities: {
-      '性状1': {
-        trait: {
-          '类型B': 0.892,
-          '类型A': 0.108
-        }
-      },
-      '性状2': {
-        trait: {
-          '类型C': 0.765,
-          '类型D': 0.235
-        }
-      }
-    }
-  }
-])
+// 实际历史记录数据
+const allHistoryRecords = reactive([])
 
 // 过滤后的历史记录
 const historyRecords = computed(() => {
-  // 在实际应用中，这里应该是从API获取数据
-  // 这里仅做模拟展示
   return allHistoryRecords
 })
 
 // 获取历史记录
 const fetchHistoryRecords = async () => {
   try {
-    // 这里应该调用API获取历史记录
-    // 模拟API调用
-    await new Promise(resolve => setTimeout(resolve, 500))
+    // 构建查询参数
+    const params = {
+      page: currentPage.value,
+      pageSize: pageSize.value
+    }
     
-    // 更新总记录数
-    totalRecords.value = allHistoryRecords.length
+    // 添加筛选条件
+    if (filterType.value) {
+      params.type = filterType.value
+    }
     
-    ElMessage.success('历史记录获取成功')
+    if (dateRange.value && dateRange.value.length === 2) {
+      params.startDate = dateRange.value[0]
+      params.endDate = dateRange.value[1]
+    }
+    
+    if (searchKeyword.value) {
+      params.keyword = searchKeyword.value
+    }
+    
+    // 调用API获取历史记录
+    const response = await getIdentifyHistory(params)
+    
+    if (response.code === 200) {
+      // 清空现有数据
+      allHistoryRecords.length = 0
+      
+      // 处理返回的数据
+      response.data.records.forEach(item => {
+        // 将API返回的数据转换为组件需要的格式
+        const record = {
+          id: item.id,
+          // 根据实际情况判断类型
+          type: item.prediction1 === '05' ? 'juhua' : 'corn',
+          // 处理base64图片数据
+          imageUrl: `data:image/jpeg;base64,${item.img}`,
+          // 使用API返回的创建时间
+          time: item.create_time,
+          // 处理识别结果
+          results: [
+            { trait: '性状1', value: `类型${item.prediction1}`, probability: parseFloat((item.probability1 * 100).toFixed(1)) },
+            { trait: '性状2', value: `类型${item.prediction2}`, probability: parseFloat((item.probability2 * 100).toFixed(1)) }
+          ],
+          // 处理概率分布数据
+          probabilities: {
+            '性状1': {
+              trait: {
+                [`类型${item.prediction1}`]: item.probability1,
+                '其他类型': 1 - item.probability1
+              }
+            },
+            '性状2': {
+              trait: {
+                [`类型${item.prediction2}`]: item.probability2,
+                '其他类型': 1 - item.probability2
+              }
+            }
+          }
+        }
+        
+        allHistoryRecords.push(record)
+      })
+      
+      // 更新总记录数
+      totalRecords.value = response.data.total
+      
+      ElMessage.success('历史记录获取成功')
+    } else {
+      ElMessage.error(response.message || '获取历史记录失败')
+    }
   } catch (error) {
     console.error('获取历史记录失败:', error)
     ElMessage.error('获取历史记录失败')
@@ -318,12 +305,36 @@ const resetFilters = () => {
 }
 
 // 查看详情
-const viewDetail = (record) => {
-  selectedRecord.value = record
+const viewDetail = async (record) => {
+  try {
+    // 调用API获取详细信息
+    const response = await getHistoryDetail(record.id)
+    
+    if (response.code === 200) {
+      // 使用API返回的详细数据
+      const detailData = response.data
+      
+      // 更新选中的记录
+      selectedRecord.value = {
+        ...record,
+        // 如果API返回了更详细的数据，可以在这里更新
+      }
+    } else {
+      // 如果API调用失败，使用当前记录数据
+      selectedRecord.value = record
+      ElMessage.warning('获取详细信息失败，显示本地数据')
+    }
+  } catch (error) {
+    console.error('获取详情失败:', error)
+    // 出错时使用当前记录数据
+    selectedRecord.value = record
+    ElMessage.warning('获取详细信息失败，显示本地数据')
+  }
+  
   detailDialogVisible.value = true
   
   // 生成饼图配置
-  generatePieChartOptions(record.probabilities)
+  generatePieChartOptions(selectedRecord.value.probabilities)
 }
 
 // 生成饼图配置
@@ -402,21 +413,24 @@ const confirmDelete = (id) => {
 // 删除记录
 const deleteRecord = async () => {
   try {
-    // 这里应该调用API删除记录
-    // 模拟API调用
-    await new Promise(resolve => setTimeout(resolve, 500))
+    // 调用API删除记录
+    const response = await deleteHistory(recordToDeleteId.value)
     
-    // 从本地数组中移除记录
-    const index = allHistoryRecords.findIndex(record => record.id === recordToDeleteId.value)
-    if (index !== -1) {
-      allHistoryRecords.splice(index, 1)
+    if (response.code === 200) {
+      // 从本地数组中移除记录
+      const index = allHistoryRecords.findIndex(record => record.id === recordToDeleteId.value)
+      if (index !== -1) {
+        allHistoryRecords.splice(index, 1)
+      }
+      
+      // 更新总记录数
+      totalRecords.value = allHistoryRecords.length
+      
+      ElMessage.success('记录删除成功')
+      deleteDialogVisible.value = false
+    } else {
+      ElMessage.error(response.message || '删除记录失败')
     }
-    
-    // 更新总记录数
-    totalRecords.value = allHistoryRecords.length
-    
-    ElMessage.success('记录删除成功')
-    deleteDialogVisible.value = false
   } catch (error) {
     console.error('删除记录失败:', error)
     ElMessage.error('删除记录失败')
