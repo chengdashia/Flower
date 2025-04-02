@@ -18,7 +18,17 @@ const post = (config) => {
     })
 }
 
+// 封装 delete 请求
+const del = (config) => {
+    return Service({
+        ...config,
+        method: 'delete',
+        params: config.params // 通常 delete 请求使用 params
+    });
+}
+
 export default {
     get,
-    post
+    post,
+    del
 }

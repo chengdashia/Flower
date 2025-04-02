@@ -244,7 +244,7 @@ const fetchHistoryRecords = async () => {
           // 根据实际情况判断类型
           type: item.prediction1 === '05' ? 'juhua' : 'corn',
           // 处理base64图片数据
-          imageUrl: `data:image/jpeg;base64,${item.img}`,
+          imageUrl: `${item.img}`,
           // 使用API返回的创建时间
           time: item.create_time,
           // 处理识别结果
@@ -414,6 +414,7 @@ const confirmDelete = (id) => {
 const deleteRecord = async () => {
   try {
     // 调用API删除记录
+    console.log(recordToDeleteId.value)
     const response = await deleteHistory(recordToDeleteId.value)
     
     if (response.code === 200) {
