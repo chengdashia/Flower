@@ -11,8 +11,8 @@ export const getIdentifyHistory = (params) => {
 
 // 获取历史记录详情
 export const getHistoryDetail = (id) => {
-  return request.get({
-    url: `/history/identify-history/${id}`
+  return request.post({
+    url: `/history/history-detail/${id}`
   })
 }
 

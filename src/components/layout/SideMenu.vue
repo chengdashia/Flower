@@ -63,7 +63,7 @@ const menuItems = [
     ]
   },
   {
-    title: '统计中心',
+    title: '用户中心',
     icon: 'Menu',
     children: [
       { index: '/history', title: '识别历史' },

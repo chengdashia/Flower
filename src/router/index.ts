@@ -23,7 +23,7 @@ const router = createRouter({
         {
           path: '/corn-trait',
           name: 'cornTrait',
-          component: () => import('../views/CornTrait.vue')
+          component: () => import('../views/UnderDevelopment.vue')
         },
         {
           path: '/user-center',

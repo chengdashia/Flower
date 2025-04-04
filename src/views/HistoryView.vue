@@ -45,8 +45,8 @@
           <el-card class="history-card" :body-style="{ padding: '0px' }">
             <div class="image-container">
               <img :src="record.imageUrl" class="history-image" />
-              <div class="image-type-tag" :class="record.type">
-                {{ record.type === 'juhua' ? '菊花' : '玉米' }}
+              <div class="image-type-tag juhua">
+                菊花
               </div>
             </div>
             
@@ -242,7 +242,7 @@ const fetchHistoryRecords = async () => {
         const record = {
           id: item.id,
           // 根据实际情况判断类型
-          type: item.prediction1 === '05' ? 'juhua' : 'corn',
+          type: item.prediction1 == 'juhua',
           // 处理base64图片数据
           imageUrl: `${item.img}`,
           // 使用API返回的创建时间
@@ -314,11 +314,45 @@ const viewDetail = async (record) => {
       // 使用API返回的详细数据
       const detailData = response.data
       
-      // 更新选中的记录
+      // 更新选中的记录，整合API返回的详细数据
       selectedRecord.value = {
         ...record,
-        // 如果API返回了更详细的数据，可以在这里更新
+        // 更新时间为API返回的创建时间
+        time: detailData.created_time,
+        // 更新图片URL
+        imageUrl: detailData.img,
+        // 更新类型判断
+        type: detailData.prediction1 === 'juhua',
+        // 更新识别结果
+        results: [
+          { 
+            trait: '性状1', 
+            value: `类型${detailData.prediction1}`, 
+            probability: parseFloat((detailData.probability1 * 100).toFixed(1)) 
+          },
+          { 
+            trait: '性状2', 
+            value: `类型${detailData.prediction2}`, 
+            probability: parseFloat((detailData.probability2 * 100).toFixed(1)) 
+          }
+        ],
+        // 更新概率分布数据
+        probabilities: {
+          '性状1': {
+            trait: {
+              [`类型${detailData.prediction1}`]: detailData.probability1,
+              '其他类型': 1 - detailData.probability1
+            }
+          },
+          '性状2': {
+            trait: {
+              [`类型${detailData.prediction2}`]: detailData.probability2,
+              '其他类型': 1 - detailData.probability2
+            }
+          }
+        }
       }
+      ElMessage.success('获取详细信息成功')
     } else {
       // 如果API调用失败，使用当前记录数据
       selectedRecord.value = record
