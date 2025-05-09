@@ -264,7 +264,7 @@ const fetchUserInfo = async () => {
       userInfo.role = '普通用户' // 这里可以根据实际情况修改
       userInfo.identifyCount = 28 // 这里可以根据实际情况修改
       userInfo.registerDays = 45 // 这里可以根据实际情况修改
-      userInfo.lastLoginTime = userData.created_time // 使用创建时间作为登录时间
+      userInfo.lastLoginTime = userData.updated_time // 使用创建时间作为登录时间
       
       // 更新表单数据
       userForm.username = userData.username

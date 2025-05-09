@@ -19,6 +19,14 @@ export const juhuaIdentify = (data) => {
     data
   })
 }
+
+export const cornIdentify = (data) => {
+  return request.post({
+    url: '/corn_identify/predict',
+    data
+  })
+}
+
 export const flowerUpload = (data) => {
   return request.post({
     url: '/flower_identify/image',
