@@ -24,7 +24,7 @@
       </div>
       <template #tip>
         <div class="el-upload__tip">
-          jpg/png 文件大小小于 5M
+          jpg/png 文件大小小于 30M
         </div>
       </template>
     </el-upload>
@@ -108,9 +108,9 @@ const beforeAvatarUpload = (rawFile) => {
     ElMessage.error('上传的图片必须是 JPG 或 PNG 格式!')
     return false
   }
-  const isLt5M = rawFile.size / 1024 / 1024 < 5
+  const isLt5M = rawFile.size / 1024 / 1024 < 30
   if (!isLt5M) {
-    ElMessage.error('上传的图片大小不能超过 5MB!')
+    ElMessage.error('上传的图片大小不能超过 30MB!')
     return false
   }
   return true
