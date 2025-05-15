@@ -22,7 +22,7 @@ export const juhuaIdentify = (data) => {
 
 export const cornIdentify = (data) => {
   return request.post({
-    url: '/corn_identify/predict',
+    url: '/corn_identify/analyze',
     data
   })
 }
