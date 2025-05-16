@@ -285,40 +285,57 @@ const submitImage = async () => {
   display: flex;
   flex-direction: column;
   height: 100%;
-  padding: 15px;
-  background-color: #f9fafc;
+  padding: 20px;
+  background-color: #f5f7fa;
+  background-image: linear-gradient(135deg, #f5f7fa 0%, #f0f4f8 100%);
 }
 
 .page-header {
   text-align: center;
-  margin-bottom: 20px;
-  padding-bottom: 15px;
-  border-bottom: 1px solid #ebeef5;
+  margin-bottom: 25px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #e4e7ed;
+  position: relative;
+}
+
+.page-header::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100px;
+  height: 3px;
+  background: linear-gradient(90deg, #67C23A, #409EFF);
+  border-radius: 3px;
 }
 
 .page-title {
-  font-size: 24px;
+  font-size: 28px;
   color: #303133;
-  margin-bottom: 5px;
+  margin-bottom: 8px;
   font-weight: 600;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .page-description {
   color: #606266;
-  font-size: 14px;
+  font-size: 15px;
+  max-width: 600px;
+  margin: 0 auto;
 }
 
 .content-wrapper {
   display: flex;
   flex: 1;
-  gap: 20px;
-  margin-bottom: 20px;
+  gap: 25px;
+  margin-bottom: 25px;
 }
 
 @media (max-width: 768px) {
   .content-wrapper {
     flex-direction: column;
-    gap: 15px;
+    gap: 20px;
   }
 }
 
@@ -327,30 +344,32 @@ const submitImage = async () => {
   display: flex;
   flex-direction: column;
   background-color: #ffffff;
-  border-radius: 8px;
+  border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
   transition: all 0.3s ease;
 }
 
 .upload-section:hover, .result-section:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+  transform: translateY(-2px);
 }
 
 .section-title {
-  padding: 12px 15px;
-  font-size: 16px;
+  padding: 15px 20px;
+  font-size: 17px;
   font-weight: bold;
   border-bottom: 1px solid #ebeef5;
-  background-color: #ecf5ff;
+  background: linear-gradient(to right, #ecf5ff, #f0f9eb);
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 }
 
 .section-title .el-icon {
-  font-size: 18px;
+  font-size: 20px;
   color: #409eff;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
 }
 
 .upload-area, .result-area {
@@ -358,20 +377,22 @@ const submitImage = async () => {
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 15px;
+  padding: 20px;
   border: 2px dashed #d9ecff;
-  border-radius: 6px;
-  margin: 15px;
-  min-height: 280px;
+  border-radius: 10px;
+  margin: 20px;
+  min-height: 300px;
   cursor: pointer;
   position: relative;
   transition: all 0.3s ease;
+  background-color: rgba(236, 245, 255, 0.3);
 }
 
 .upload-area.drag-over {
   border-color: #409eff;
-  background-color: rgba(64, 158, 255, 0.05);
+  background-color: rgba(64, 158, 255, 0.08);
   transform: scale(1.02);
+  box-shadow: 0 0 15px rgba(64, 158, 255, 0.2);
 }
 
 .upload-placeholder, .result-placeholder {
@@ -381,20 +402,30 @@ const submitImage = async () => {
   justify-content: center;
   color: #909399;
   text-align: center;
+  padding: 20px;
+  width: 100%;
 }
 
 .upload-icon, .info-icon {
-  font-size: 50px;
-  margin-bottom: 15px;
+  font-size: 60px;
+  margin-bottom: 20px;
   color: #409eff;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+  filter: drop-shadow(0 3px 5px rgba(0, 0, 0, 0.15));
   transition: all 0.3s;
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0px); }
 }
 
 .upload-text {
-  margin-bottom: 10px;
-  font-size: 16px;
+  margin-bottom: 12px;
+  font-size: 17px;
   color: #606266;
+  line-height: 1.5;
 }
 
 .click-upload {
@@ -402,12 +433,20 @@ const submitImage = async () => {
   font-weight: bold;
   text-decoration: underline;
   cursor: pointer;
+  transition: color 0.3s;
+}
+
+.click-upload:hover {
+  color: #66b1ff;
 }
 
 .file-limit {
-  font-size: 12px;
+  font-size: 13px;
   color: #909399;
-  margin-top: 5px;
+  margin-top: 8px;
+  background-color: rgba(144, 147, 153, 0.1);
+  padding: 5px 10px;
+  border-radius: 4px;
 }
 
 .image-preview, .result-image {
@@ -423,9 +462,14 @@ const submitImage = async () => {
   max-width: 100%;
   max-height: 100%;
   object-fit: contain;
-  border-radius: 6px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   transition: all 0.3s;
+}
+
+.image-preview:hover img, .result-image:hover img {
+  transform: scale(1.02);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
 }
 
 .image-actions {
@@ -433,11 +477,13 @@ const submitImage = async () => {
   top: 10px;
   right: 10px;
   opacity: 0;
-  transition: opacity 0.3s ease;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  transform: translateY(-5px);
 }
 
 .image-preview:hover .image-actions {
   opacity: 1;
+  transform: translateY(0);
 }
 
 .result-content {
@@ -445,95 +491,114 @@ const submitImage = async () => {
   height: 100%;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 15px;
+  padding: 10px;
 }
 
 .lab-charts {
-  margin-bottom: 20px;
+  margin-bottom: 25px;
 }
 
 .chart-container {
   background-color: #ffffff;
-  border-radius: 8px;
-  padding: 15px;
-  margin-bottom: 15px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s;
+}
+
+.chart-container:hover {
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+  transform: translateY(-2px);
 }
 
 .chart-container h3 {
   margin-top: 0;
-  margin-bottom: 15px;
-  font-size: 16px;
+  margin-bottom: 20px;
+  font-size: 18px;
   color: #303133;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #ebeef5;
 }
 
 .chart-container h3 .el-icon {
   color: #409eff;
+  font-size: 20px;
 }
 
 .lab-card {
-  margin-bottom: 10px;
-  border-radius: 6px;
+  margin-bottom: 15px;
+  border-radius: 8px;
   transition: all 0.3s;
   border: 1px solid #ebeef5;
+  overflow: hidden;
 }
 
 .lab-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transform: translateY(-3px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
 }
 
 .lab-value {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
+  align-items: center;
 }
 
 .lab-label {
   font-weight: bold;
   color: #303133;
+  font-size: 15px;
 }
 
 .lab-number {
-  font-family: monospace;
-  font-size: 14px;
+  font-family: 'Courier New', monospace;
+  font-size: 16px;
   color: #409eff;
   font-weight: 600;
+  background-color: rgba(64, 158, 255, 0.1);
+  padding: 2px 8px;
+  border-radius: 4px;
 }
 
 .progress-bar {
-  height: 10px;
+  height: 12px;
   background-color: #f0f2f5;
-  border-radius: 5px;
+  border-radius: 6px;
   overflow: hidden;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .progress {
   height: 100%;
-  transition: width 0.5s ease;
-  border-radius: 5px;
+  transition: width 0.8s ease;
+  border-radius: 6px;
+  background-image: linear-gradient(to right, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0));
 }
 
 .channel-description {
-  font-size: 11px;
+  font-size: 12px;
   color: #909399;
-  margin-top: 4px;
+  margin-top: 6px;
   text-align: right;
+  font-style: italic;
 }
 
 .action-buttons {
   display: flex;
   justify-content: center;
-  margin-top: 5px;
+  margin-top: 10px;
 }
 
 .identify-button {
-  padding: 12px 40px;
-  font-size: 16px;
+  padding: 14px 45px;
+  font-size: 17px;
   border-radius: 30px;
   transition: all 0.3s;
   background: linear-gradient(135deg, #67C23A, #4CAF50);
@@ -543,28 +608,46 @@ const submitImage = async () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+  gap: 10px;
+  box-shadow: 0 6px 16px rgba(76, 175, 80, 0.4);
+  position: relative;
+  overflow: hidden;
+}
+
+.identify-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: all 0.6s;
+}
+
+.identify-button:hover:not(:disabled)::before {
+  left: 100%;
 }
 
 .identify-button:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(76, 175, 80, 0.4);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(76, 175, 80, 0.5);
   background: linear-gradient(135deg, #85CE61, #67C23A);
 }
 
 .identify-button:active:not(:disabled) {
-  transform: translateY(0);
-  box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
 }
 
 .identify-button:disabled {
   background: linear-gradient(135deg, #C0C4CC, #909399);
   box-shadow: none;
   cursor: not-allowed;
+  opacity: 0.8;
 }
 
 .button-icon {
-  font-size: 18px;
+  font-size: 20px;
 }
 </style>
