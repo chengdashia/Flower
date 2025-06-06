@@ -1,6 +1,10 @@
 <template>
   <el-scrollbar>
-    <el-menu router :default-openeds="['1', '2']" :default-active="activeMenu">
+    <el-menu 
+      router 
+      :unique-opened="true"
+      :default-active="activeMenu"
+    >
       <el-sub-menu v-for="(item, index) in menuItems" :key="index" :index="(index + 1).toString()">
         <template #title>
           <el-icon>

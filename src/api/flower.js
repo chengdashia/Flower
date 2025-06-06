@@ -27,6 +27,13 @@ export const cornIdentify = (data) => {
   })
 }
 
+export const filamentIdentify = (data) => {
+  return request.post({
+    url: '/filament_identify/analyze',
+    data
+  })
+}
+
 export const flowerUpload = (data) => {
   return request.post({
     url: '/flower_identify/image',

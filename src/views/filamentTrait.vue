@@ -46,8 +46,8 @@
             <div>请上传图片进行识别</div>
           </div>
           <div v-else class="result-content">
-            <div class="result-image" v-if="processedImage">
-              <img :src="processedImage" alt="处理后的图片" />
+            <div class="result-image" v-if="comparisonImage">
+              <img :src="comparisonImage" alt="对比图片" />
             </div>
           </div>
         </div>
@@ -56,9 +56,9 @@
 
     <div v-if="analysisResult" class="lab-charts">
       <div class="chart-container">
-        <h3><el-icon><Histogram /></el-icon> LAB 颜色均值</h3>
+        <h3><el-icon><Histogram /></el-icon> 原始图片 LAB 均值</h3>
         <el-row :gutter="20">
-          <el-col :xs="24" :sm="24" :md="8" v-for="(value, key) in meanLab" :key="key">
+          <el-col :xs="24" :sm="24" :md="8" v-for="(value, key) in originalLab" :key="'original-'+key">
             <el-card class="lab-card" :body-style="{ padding: '15px' }">
               <div class="lab-value">
                 <span class="lab-label">{{ key }}:</span>
@@ -74,9 +74,9 @@
       </div>
       
       <div class="chart-container">
-        <h3><el-icon><TopRight /></el-icon> a* 最大值对应的 LAB 值</h3>
+        <h3><el-icon><TopRight /></el-icon> 提取的红色区域 LAB 均值</h3>
         <el-row :gutter="20">
-          <el-col :xs="24" :sm="24" :md="8" v-for="(value, key) in maxALab" :key="key">
+          <el-col :xs="24" :sm="24" :md="8" v-for="(value, key) in redRegionLab" :key="'red-'+key">
             <el-card class="lab-card" :body-style="{ padding: '15px' }">
               <div class="lab-value">
                 <span class="lab-label">{{ key }}:</span>
@@ -111,16 +111,16 @@
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElLoading } from 'element-plus'
-import { Upload, InfoFilled, Delete, DataAnalysis, Histogram, TopRight, Back, Search } from '@element-plus/icons-vue'
-import { cornIdentify } from '@/api/flower'
+import { Upload, InfoFilled, Delete, DataAnalysis, Histogram, TopRight, Search } from '@element-plus/icons-vue'
+import { filamentIdentify } from '@/api/flower'
 
 const router = useRouter()
 const fileInput = ref(null)
 const uploadedImage = ref(null)
 const analysisResult = ref(null)
-const processedImage = ref(null)
-const meanLab = ref(null)
-const maxALab = ref(null)
+const comparisonImage = ref(null)
+const originalLab = ref(null)
+const redRegionLab = ref(null)
 const isDragging = ref(false)
 const isLoading = ref(false)
 
@@ -163,9 +163,9 @@ const removeImage = (event) => {
 
 const resetResults = () => {
   analysisResult.value = null
-  processedImage.value = null
-  meanLab.value = null
-  maxALab.value = null
+  comparisonImage.value = null
+  originalLab.value = null
+  redRegionLab.value = null
 }
 
 const processFile = (file) => {
@@ -243,29 +243,27 @@ const submitImage = async () => {
   })
 
   try {
-    // 调用后端API，发送base64格式的图片
-    const response = await cornIdentify({
+    const response = await filamentIdentify({
       image: uploadedImage.value
     })
     
-    // 处理返回的数据
     if (response.code === 200) {
       analysisResult.value = response.data
       
-      // 确保processed_image是完整的base64格式
-      const processedImageData = response.data.processed_image
-      if (processedImageData) {
-        // 检查是否已经包含data:image前缀，如果没有则添加
-        if (processedImageData.startsWith('data:image')) {
-          processedImage.value = processedImageData
+      // 处理对比图片
+      const comparisonImageData = response.data.comparison_image
+      if (comparisonImageData) {
+        if (comparisonImageData.startsWith('data:image')) {
+          comparisonImage.value = comparisonImageData
         } else {
-          // 假设返回的是纯base64字符串，添加适当的前缀
-          processedImage.value = `data:image/jpeg;base64,${processedImageData}`
+          comparisonImage.value = `data:image/jpeg;base64,${comparisonImageData}`
         }
       }
       
-      meanLab.value = response.data.mean_lab
-      maxALab.value = response.data.max_a_lab
+      // 处理 LAB 值
+      originalLab.value = response.data.lab_values.original
+      redRegionLab.value = response.data.lab_values.red_region
+      
       ElMessage.success('识别完成')
     } else {
       ElMessage.error(response.message || '识别失败')
@@ -332,15 +330,19 @@ const submitImage = async () => {
   margin-bottom: 25px;
 }
 
-@media (max-width: 768px) {
-  .content-wrapper {
-    flex-direction: column;
-    gap: 20px;
-  }
+.upload-section {
+  flex: 0.4;  /* 上传区域占40% */
+  display: flex;
+  flex-direction: column;
+  background-color: #ffffff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
 }
 
-.upload-section, .result-section {
-  flex: 1;
+.result-section {
+  flex: 0.6;  /* 结果区域占60% */
   display: flex;
   flex-direction: column;
   background-color: #ffffff;
@@ -386,6 +388,10 @@ const submitImage = async () => {
   position: relative;
   transition: all 0.3s ease;
   background-color: rgba(236, 245, 255, 0.3);
+}
+
+.result-area {
+  cursor: default;  /* 结果区域不需要鼠标手型 */
 }
 
 .upload-area.drag-over {
@@ -649,5 +655,16 @@ const submitImage = async () => {
 
 .button-icon {
   font-size: 20px;
+}
+
+@media (max-width: 768px) {
+  .content-wrapper {
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  .upload-section, .result-section {
+    flex: 1;  /* 在移动端恢复为等比例 */
+  }
 }
 </style>
