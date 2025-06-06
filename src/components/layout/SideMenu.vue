@@ -60,6 +60,7 @@ const menuItems = [
       { index: '/juhua-trait', title: '菊花形状识别' },
       { index: '/juhua-stats', title: '菊花形状统计' },
       { index: '/corn-trait', title: '玉米形状识别' },
+      { index: '/filament-trait', title: '花丝原位识别' },
     ]
   },
   {

@@ -26,6 +26,11 @@ const router = createRouter({
           component: () => import('../views/CornTrait.vue')
         },
         {
+          path: '/filament-trait',
+          name: 'filamentTrait',
+          component: () => import('../views/filamentTrait.vue')
+        },
+        {
           path: '/user-center',
           name: 'userCenter',
           component: () => import('../views/UserCenter.vue')
