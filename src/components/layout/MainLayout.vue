@@ -20,7 +20,6 @@
 </template>
 
 <script setup>
-import { Menu as IconMenu, Aim, User } from '@element-plus/icons-vue'
 import { useRouter } from 'vue-router'
 import { ref } from 'vue'
 

@@ -34,6 +34,13 @@ export const filamentIdentify = (data) => {
   })
 }
 
+export const leafSheathIdentify = (data) => {
+  return request.post({
+    url: '/leaf_sheath_identify/analyze',
+    data
+  })
+}
+
 export const flowerUpload = (data) => {
   return request.post({
     url: '/flower_identify/image',
