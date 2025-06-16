@@ -2,7 +2,7 @@
 import { ref } from 'vue';
 import { Menu as StarFilled } from "@element-plus/icons-vue";
 
-import PieChart from '../components/charts/PieChart.vue';
+import PieChart from '../../components/charts/PieChart.vue';
 const chartData = ref([
   { name: '性状0', value: 20, sideData: [{ name: '细分性状0-1', value: 12 }, { name: '细分性状0-2', value: 8 }] },
   { name: '性状1', value: 15, sideData: [{ name: '细分性状1-1', value: 9 }, { name: '细分性状1-2', value: 6 }] },

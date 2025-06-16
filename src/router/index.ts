@@ -13,37 +13,37 @@ const router = createRouter({
         {
           path: '/juhua-trait',
           name: 'juhuaTrait',
-          component: () => import('../views/JuhuaTrait.vue')
+          component: () => import('../views/juhua/JuhuaTrait.vue')
         },
         {
           path: '/juhua-stats',
           name: 'juhuaStats',
-          component: () => import('../views/JuhuaStats.vue')
+          component: () => import('../views/juhua/JuhuaStats.vue')
         },
         {
           path: '/corn-trait',
           name: 'cornTrait',
-          component: () => import('../views/CornTrait.vue')
+          component: () => import('../views/corn/CornTrait.vue')
         },
         {
           path: '/filament-trait',
           name: 'filamentTrait',
-          component: () => import('../views/FilamentTrait.vue')
+          component: () => import('../views/corn/FilamentTrait.vue')
         },
         {
           path: '/leaf-sheath-trait',
           name: 'leafSheathTrait',
-          component: () => import('../views/LeafSheathTrait.vue')
+          component: () => import('../views/corn/LeafSheathTrait.vue')
         },
         {
           path: '/user-center',
           name: 'userCenter',
-          component: () => import('../views/UserCenter.vue')
+          component: () => import('../views/user/UserCenter.vue')
         },
         {
           path: '/history',
           name: 'history',
-          component: () => import('../views/HistoryView.vue')
+          component: () => import('../views/user/HistoryView.vue')
         },
       ]
     },

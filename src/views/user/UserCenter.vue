@@ -156,7 +156,7 @@ import { ref, reactive, onMounted } from 'vue'
 import { StarFilled, Edit, Lock, Plus } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { useRouter } from 'vue-router'
-import { getUserInfo, updateUserInfo } from '../api/user'
+import { getUserInfo, updateUserInfo } from '../../api/user'
 
 const router = useRouter()
 
