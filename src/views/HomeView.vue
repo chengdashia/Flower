@@ -9,9 +9,6 @@
     </template>
     
     <template #main>
-      <el-divider>
-          <el-icon><star-filled /></el-icon>
-        </el-divider>
       <!-- 动态组件区域，根据当前选择的功能模块显示不同内容 -->
        <RouterView />
       <!-- <component 

@@ -4,17 +4,18 @@
       router 
       :unique-opened="true"
       :default-active="activeMenu"
+      :collapse="collapse"
     >
       <template v-for="(item, index) in menuItems" :key="index">
-        <template v-if="item.children && item.children.length > 0">
+        <template v-if="(item as MenuItem).children && (item as MenuItem).children.length > 0">
           <el-sub-menu :index="(index + 1).toString()">
             <template #title>
-              <el-icon v-if="item.icon">
-                <component :is="getIconComponent(item.icon)" />
+              <el-icon v-if="(item as MenuItem).icon">
+                <component :is="getIconComponent((item as MenuItem).icon!)" />
               </el-icon>
-              <span>{{ item.title }}</span>
+              <span>{{ (item as MenuItem).title }}</span>
             </template>
-            <template v-for="(child, childIndex) in item.children" :key="childIndex">
+            <template v-for="(child, childIndex) in (item as MenuItem).children" :key="childIndex">
               <template v-if="child.children && child.children.length > 0">
                 <el-sub-menu :index="`${index + 1}-${childIndex + 1}`">
                   <template #title>
@@ -49,12 +50,12 @@
         </template>
         <el-menu-item 
           v-else 
-          :index="item.index"
+          :index="(item as MenuItem).index"
         >
-          <el-icon v-if="item.icon">
-            <component :is="getIconComponent(item.icon)" />
+          <el-icon v-if="(item as MenuItem).icon">
+            <component :is="getIconComponent((item as MenuItem).icon!)" />
           </el-icon>
-          <span>{{ item.title }}</span>
+          <span>{{ (item as MenuItem).title }}</span>
         </el-menu-item>
       </template>
     </el-menu>
@@ -75,22 +76,14 @@ interface MenuItem {
   action?: (() => void) | null;
 }
 
-// 定义子菜单项接口
-interface SubMenuItem {
-  title: string;
-  icon?: string;
-  index?: string;
-  children?: {
-    index: string;
-    title: string;
-    icon?: string;
-  }[];
-}
-
 const props = defineProps({
   menuItems: {
-    type: Array as () => (MenuItem | SubMenuItem)[],
+    type: Array as () => MenuItem[],
     required: true
+  },
+  collapse: {
+    type: Boolean,
+    default: false
   }
 });
 

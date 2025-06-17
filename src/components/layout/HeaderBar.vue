@@ -1,9 +1,7 @@
 <template>
   <div class="header-container">
     <div class="spacer"></div>
-    
-    <h1 class="title">{{ title }}</h1>
-    
+    <!-- <h1 class="title">{{ title }}</h1> -->
     <div class="toolbar">
       <el-dropdown class="dropdown" @command="handleCommand">
         <span class="user-info">
@@ -27,10 +25,10 @@
 import { User } from '@element-plus/icons-vue';
 
 defineProps({
-  title: {
-    type: String,
-    default: '花卉识别系统'
-  },
+  // title: {
+  //   type: String,
+  //   default: '花卉识别系统'
+  // },
   username: {
     type: String,
     default: 'User'
@@ -49,7 +47,7 @@ function handleCommand(command: string) {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  height: 100%;
+  height: 64px;
   width: 100%;
 }
 
@@ -57,13 +55,13 @@ function handleCommand(command: string) {
   width: 200px;
 }
 
-.title {
+/* .title {
   flex-grow: 1;
   text-align: center;
   margin: 0;
   color: #565656;
   font-size: 24px;
-}
+} */
 
 .toolbar {
   width: 200px;

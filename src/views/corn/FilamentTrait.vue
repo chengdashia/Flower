@@ -56,7 +56,17 @@
 
     <div v-if="analysisResult" class="lab-charts">
       <div class="chart-container">
-        <h3><el-icon><Histogram /></el-icon> 原始图片 LAB 均值</h3>
+        <div class="chart-header">
+          <h3><el-icon><Histogram /></el-icon> 原始图片 LAB 均值</h3>
+          <el-button 
+            type="primary" 
+            size="small" 
+            @click="copyLabValues(originalLab, '原始图片LAB均值')"
+            :icon="CopyDocument"
+          >
+            复制数据
+          </el-button>
+        </div>
         <el-row :gutter="20">
           <el-col :xs="24" :sm="24" :md="8" v-for="(value, key) in originalLab" :key="'original-'+key">
             <el-card class="lab-card" :body-style="{ padding: '15px' }">
@@ -74,7 +84,17 @@
       </div>
       
       <div class="chart-container">
-        <h3><el-icon><TopRight /></el-icon> 提取的红色区域 LAB 均值</h3>
+        <div class="chart-header">
+          <h3><el-icon><TopRight /></el-icon> 提取的红色区域 LAB 均值</h3>
+          <el-button 
+            type="primary" 
+            size="small" 
+            @click="copyLabValues(redRegionLab, '提取的红色区域LAB均值')"
+            :icon="CopyDocument"
+          >
+            复制数据
+          </el-button>
+        </div>
         <el-row :gutter="20">
           <el-col :xs="24" :sm="24" :md="8" v-for="(value, key) in redRegionLab" :key="'red-'+key">
             <el-card class="lab-card" :body-style="{ padding: '15px' }">
@@ -111,7 +131,7 @@
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElLoading } from 'element-plus'
-import { Upload, InfoFilled, Delete, DataAnalysis, Histogram, TopRight, Search } from '@element-plus/icons-vue'
+import { Upload, InfoFilled, Delete, DataAnalysis, Histogram, TopRight, Search, CopyDocument } from '@element-plus/icons-vue'
 import { filamentIdentify } from '@/api/flower'
 
 const router = useRouter()
@@ -276,6 +296,20 @@ const submitImage = async () => {
     isLoading.value = false
   }
 }
+
+// 复制 LAB 值到剪贴板
+const copyLabValues = (labValues, title) => {
+  if (!labValues) return
+  
+  const formatValue = (value) => value.toFixed(2)
+  const text = `${title}:\nL: ${formatValue(labValues.L)}\nA: ${formatValue(labValues.A)}\nB: ${formatValue(labValues.B)}`
+  
+  navigator.clipboard.writeText(text).then(() => {
+    ElMessage.success('复制成功')
+  }).catch(() => {
+    ElMessage.error('复制失败，请手动复制')
+  })
+}
 </script>
 
 <style scoped>
@@ -292,20 +326,7 @@ const submitImage = async () => {
   text-align: center;
   margin-bottom: 25px;
   padding-bottom: 20px;
-  border-bottom: 1px solid #e4e7ed;
   position: relative;
-}
-
-.page-header::after {
-  content: '';
-  position: absolute;
-  bottom: -1px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 100px;
-  height: 3px;
-  background: linear-gradient(90deg, #67C23A, #409EFF);
-  border-radius: 3px;
 }
 
 .page-title {
@@ -655,6 +676,28 @@ const submitImage = async () => {
 
 .button-icon {
   font-size: 20px;
+}
+
+.chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #ebeef5;
+}
+
+.chart-header h3 {
+  margin: 0;
+  font-size: 18px;
+  color: #303133;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.chart-container h3 {
+  display: none; /* 隐藏原来的标题样式 */
 }
 
 @media (max-width: 768px) {
