@@ -20,6 +20,25 @@ export const juhuaIdentify = (data) => {
   })
 }
 
+export const chrCrop = (file) => {
+  const formData = new FormData()
+  formData.append('file', file)
+  return request.post({
+    url: '/chr_identify_file/crop',
+    data: formData,
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  })
+}
+
+export const chrPredict = (data) => {
+  return request.post({
+    url: '/chr_identify_file/predict',
+    data
+  })
+}
+
 export const cornIdentify = (data) => {
   return request.post({
     url: '/corn_identify/analyze',

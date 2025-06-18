@@ -13,7 +13,7 @@ const router = createRouter({
         {
           path: '/juhua-trait',
           name: 'juhuaTrait',
-          component: () => import('../views/juhua/JuhuaTrait.vue')
+          component: () => import('../views/juhua/JuhuaTraitFile.vue')
         },
         {
           path: '/juhua-stats',
