@@ -63,7 +63,7 @@
 </template>
 
 <script setup lang="ts">
-import { Menu as IconMenu, Aim } from '@element-plus/icons-vue';
+import { Menu as IconMenu, Aim, DataLine, DataAnalysis } from '@element-plus/icons-vue';
 import { useRoute } from 'vue-router';
 import { ref, watchEffect } from 'vue';
 
@@ -121,6 +121,27 @@ const menuItems = [
     ]
   },
   {
+    title: '分析功能',
+    icon: 'DataAnalysis',
+    children: [
+      {
+        title: '菊花分析',
+        icon: 'DataLine',
+        children: [
+
+        ]
+      },
+      {
+        title: '玉米分析',
+        icon: 'DataLine',
+        children: [
+          { index: '/corn-analysis', title: '玉米整体分析' },
+        ]
+      },
+
+    ]
+  },
+  {
     title: '用户中心',
     icon: 'Menu',
     children: [
@@ -133,7 +154,10 @@ const menuItems = [
 function getIconComponent(iconName: string) {
   const iconMap: Record<string, any> = {
     'Menu': IconMenu,
-    'Aim': Aim
+    'Aim': Aim,
+    'DataLine': DataLine,
+    'DataAnalysis': DataAnalysis
+
   };
   
   return iconMap[iconName] || IconMenu;

@@ -1,8 +1,8 @@
 <template>
   <div class="corn-trait-container">
     <div class="page-header">
-      <h1 class="page-title">叶鞘识别</h1>
-      <p class="page-description">上传玉米叶鞘图片，获取LAB颜色空间分析结果</p>
+      <h1 class="page-title">玉米整体分析</h1>
+      <p class="page-description">上传玉米图片，获取形态分析和测量数据</p>
     </div>
 
     <div class="content-wrapper">
@@ -38,7 +38,7 @@
       <div class="result-section">
         <div class="section-title">
           <el-icon><DataAnalysis /></el-icon>
-          <span>识别结果</span>
+          <span>图片分析展示</span>
         </div>
         <div class="result-area">
           <div v-if="!analysisResult" class="result-placeholder">
@@ -46,69 +46,145 @@
             <div>请上传图片进行识别</div>
           </div>
           <div v-else class="result-content">
-            <div class="result-image" v-if="comparisonImage">
-              <img :src="comparisonImage" alt="对比图片" />
+            <div class="result-images" v-if="analysisResult.results && analysisResult.results.length > 0">
+              <div class="image-grid">
+                <div class="image-item" v-if="analysisResult.results[0].images.analysis">
+                  <h4>分析图片</h4>
+                  <img :src="getImageUrl(analysisResult.results[0].images.analysis)" alt="分析图片" class="flipped-image" @click="openPreview(getImageUrl(analysisResult.results[0].images.analysis))" style="cursor:pointer;" />
+                </div>
+                <div class="image-item" v-if="analysisResult.results[0].images.mask">
+                  <h4>掩码图片</h4>
+                  <img :src="getImageUrl(analysisResult.results[0].images.mask)" alt="掩码图片" class="flipped-image" @click="openPreview(getImageUrl(analysisResult.results[0].images.mask))" style="cursor:pointer;" />
+                </div>
+                <div class="image-item" v-if="analysisResult.results[0].images.overlay">
+                  <h4>叠加图片</h4>
+                  <img :src="getImageUrl(analysisResult.results[0].images.overlay)" alt="叠加图片" class="flipped-image" @click="openPreview(getImageUrl(analysisResult.results[0].images.overlay))" style="cursor:pointer;" />
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <div v-if="analysisResult" class="lab-charts">
-      <div class="chart-container">
-        <div class="chart-header">
-          <h3><el-icon><Histogram /></el-icon> 原始图片 LAB 均值</h3>
-          <el-button 
-            type="primary" 
-            size="small" 
-            @click="copyLabValues(originalLab, '原始图片LAB均值')"
-            :icon="CopyDocument"
-          >
-            复制数据
-          </el-button>
-        </div>
-        <el-row :gutter="20">
-          <el-col :xs="24" :sm="24" :md="8" v-for="(value, key) in originalLab" :key="'original-'+key">
-            <el-card class="lab-card" :body-style="{ padding: '15px' }">
-              <div class="lab-value">
-                <span class="lab-label">{{ key }}:</span>
-                <span class="lab-number">{{ value.toFixed(2) }}</span>
-              </div>
-              <div class="progress-bar">
-                <div class="progress" :style="{ width: getProgressWidth(key, value) + '%', backgroundColor: getColorForChannel(key) }"></div>
-              </div>
-              <div class="channel-description">{{ getChannelDescription(key) }}</div>
-            </el-card>
-          </el-col>
-        </el-row>
+    <!-- 数据统计和图表区域 -->
+    <div v-if="analysisResult" class="data-analysis-section">
+      <div class="section-header">
+        <h2>数据分析</h2>
+        <el-button 
+          type="primary" 
+          @click="copyAllData"
+          :icon="CopyDocument"
+          size="large"
+        >
+          一键复制数据
+        </el-button>
       </div>
 
-      <div class="chart-container">
-        <div class="chart-header">
-          <h3><el-icon><TopRight /></el-icon> 提取的红色区域 LAB 均值</h3>
-          <el-button 
-            type="primary" 
-            size="small" 
-            @click="copyLabValues(redRegionLab, '提取的红色区域LAB均值')"
-            :icon="CopyDocument"
-          >
-            复制数据
-          </el-button>
+      <div class="charts-container">
+        <!-- 识别统计图表 -->
+        <div class="chart-card">
+          <div class="chart-title">
+            <el-icon><PieChart /></el-icon>
+            <span>识别统计</span>
+          </div>
+          <div class="chart-content">
+            <div class="stat-cards">
+              <div class="stat-card">
+                <div class="stat-icon">
+                  <el-icon><DataAnalysis /></el-icon>
+                </div>
+                <div class="stat-info">
+                  <div class="stat-value">{{ analysisResult.ym_count }}</div>
+                  <div class="stat-label">玉米数量</div>
+                </div>
+              </div>
+              <div class="stat-card" v-if="analysisResult.results && analysisResult.results.length > 0">
+                <div class="stat-icon">
+                  <el-icon><Histogram /></el-icon>
+                </div>
+                <div class="stat-info">
+                  <div class="stat-value">{{ analysisResult.results[0].shape_type }}</div>
+                  <div class="stat-label">形状类型</div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-        <el-row :gutter="20">
-          <el-col :xs="24" :sm="24" :md="8" v-for="(value, key) in redRegionLab" :key="'red-'+key">
-            <el-card class="lab-card" :body-style="{ padding: '15px' }">
-              <div class="lab-value">
-                <span class="lab-label">{{ key }}:</span>
-                <span class="lab-number">{{ value.toFixed(2) }}</span>
+
+        <!-- 中线宽度图表 -->
+        <div class="chart-card" v-if="analysisResult.results && analysisResult.results.length > 0">
+          <div class="chart-title">
+            <el-icon><TrendCharts /></el-icon>
+            <span>中线宽度分布</span>
+          </div>
+          <div class="chart-content">
+            <div class="width-chart">
+              <div 
+                v-for="(width, index) in analysisResult.results[0].midline_widths" 
+                :key="index"
+                class="width-bar"
+              >
+                <div class="bar-label">位置{{ index + 1 }}</div>
+                <div class="bar-container">
+                  <div 
+                    class="bar-fill" 
+                    :style="{ width: getWidthPercentage(width) + '%' }"
+                  ></div>
+                </div>
+                <span class="bar-value">{{ width }}</span>
               </div>
-              <div class="progress-bar">
-                <div class="progress" :style="{ width: getProgressWidth(key, value) + '%', backgroundColor: getColorForChannel(key) }"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 比例数据图表 -->
+        <div class="chart-card" v-if="analysisResult.results && analysisResult.results.length > 0">
+          <div class="chart-title">
+            <el-icon><PieChart /></el-icon>
+            <span>比例数据</span>
+          </div>
+          <div class="chart-content">
+            <div class="ratio-chart">
+              <div class="ratio-item">
+                <div class="ratio-label">1:3 比例</div>
+                <div class="ratio-progress">
+                  <div class="progress-bar">
+                    <div 
+                      class="progress-fill" 
+                      :style="{ width: getRatioPercentage(analysisResult.results[0].ratios.ratio_1_3) + '%' }"
+                    ></div>
+                  </div>
+                  <span class="ratio-value">{{ analysisResult.results[0].ratios.ratio_1_3.toFixed(4) }}</span>
+                </div>
               </div>
-              <div class="channel-description">{{ getChannelDescription(key) }}</div>
-            </el-card>
-          </el-col>
-        </el-row>
+              <div class="ratio-item">
+                <div class="ratio-label">1:5 比例</div>
+                <div class="ratio-progress">
+                  <div class="progress-bar">
+                    <div 
+                      class="progress-fill" 
+                      :style="{ width: getRatioPercentage(analysisResult.results[0].ratios.ratio_1_5) + '%' }"
+                    ></div>
+                  </div>
+                  <span class="ratio-value">{{ analysisResult.results[0].ratios.ratio_1_5.toFixed(4) }}</span>
+                </div>
+              </div>
+              <div class="ratio-item">
+                <div class="ratio-label">3:5 比例</div>
+                <div class="ratio-progress">
+                  <div class="progress-bar">
+                    <div 
+                      class="progress-fill" 
+                      :style="{ width: getRatioPercentage(analysisResult.results[0].ratios.ratio_3_5) + '%' }"
+                    ></div>
+                  </div>
+                  <span class="ratio-value">{{ analysisResult.results[0].ratios.ratio_3_5.toFixed(4) }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -124,25 +200,107 @@
         <span>{{ isLoading ? '识别中...' : '开始识别' }}</span>
       </el-button>
     </div>
+
+    <!-- 弹窗预览大图 -->
+    <el-dialog v-model="previewDialogVisible" width="900px" top="6vh" :show-close="true" append-to-body :before-close="handlePreviewClose" class="custom-preview-dialog">
+      <template #title>
+        <span>图片预览</span>
+        <el-button @click="togglePreviewFlip" size="small" style="margin-left:16px;" :icon="RefreshRight">翻转</el-button>
+        <span style="margin-left:16px;font-size:13px;color:#999;">滚轮缩放</span>
+      </template>
+      <div class="preview-img-wrapper">
+        <div class="preview-img-scroll" ref="previewImgScrollRef">
+          <img :src="previewImageUrl"
+               @mousedown="onPreviewImgMouseDown"
+               draggable="false"
+               :style="{
+                 maxWidth: '1600px',
+                 maxHeight: '1200px',
+                 transform: `scale(${previewScale}) ${previewFlipped ? 'rotate(180deg)' : ''}`,
+                 transition: 'transform 0.3s',
+                 cursor: isDragging ? 'grabbing' : 'grab',
+                 background: '#f6f8fa',
+                 borderRadius: '12px',
+                 boxShadow: '0 4px 24px rgba(0,0,0,0.12)'
+               }"
+               @wheel="handlePreviewWheel"
+          />
+        </div>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
-import { ElMessage, ElLoading } from 'element-plus'
-import { Upload, InfoFilled, Delete, DataAnalysis, Histogram, TopRight, Search, CopyDocument } from '@element-plus/icons-vue'
-import { leafSheathIdentify } from '@/api/flower'
+import { ElMessage, ElLoading, ElDialog } from 'element-plus'
+import { Upload, InfoFilled, Delete, DataAnalysis, Search, PieChart, TrendCharts, CopyDocument, Histogram, RefreshRight, ZoomIn } from '@element-plus/icons-vue'
+import {ymAnalyzer} from '@/api/flower'
 
 const router = useRouter()
 const fileInput = ref(null)
 const uploadedImage = ref(null)
 const analysisResult = ref(null)
-const comparisonImage = ref(null)
-const originalLab = ref(null)
-const redRegionLab = ref(null)
 const isDragging = ref(false)
 const isLoading = ref(false)
+
+// 预览弹窗相关
+const previewDialogVisible = ref(false)
+const previewImageUrl = ref('')
+const previewFlipped = ref(false)
+const previewScale = ref(1)
+const previewImgScrollRef = ref(null)
+let dragStartX = 0
+let dragStartY = 0
+let scrollStartLeft = 0
+let scrollStartTop = 0
+
+const openPreview = (imgUrl) => {
+  previewImageUrl.value = imgUrl
+  previewFlipped.value = false
+  previewScale.value = 1
+  previewDialogVisible.value = true
+}
+const togglePreviewFlip = () => {
+  previewFlipped.value = !previewFlipped.value
+}
+const handlePreviewWheel = (e) => {
+  e.preventDefault()
+  let next = previewScale.value + (e.deltaY < 0 ? 0.1 : -0.1)
+  if (next < 0.2) next = 0.2
+  if (next > 5) next = 5
+  previewScale.value = next
+}
+const handlePreviewClose = (done) => {
+  previewScale.value = 1
+  previewFlipped.value = false
+  done && done()
+}
+
+const onPreviewImgMouseDown = (e) => {
+  if (e.button !== 0) return
+  isDragging.value = true
+  dragStartX = e.clientX
+  dragStartY = e.clientY
+  const el = previewImgScrollRef.value
+  scrollStartLeft = el.scrollLeft
+  scrollStartTop = el.scrollTop
+  document.body.style.cursor = 'grabbing'
+  e.preventDefault()
+}
+const onPreviewMouseMove = (e) => {
+  if (!isDragging.value) return
+  const el = previewImgScrollRef.value
+  el.scrollLeft = scrollStartLeft - (e.clientX - dragStartX)
+  el.scrollTop = scrollStartTop - (e.clientY - dragStartY)
+}
+const onPreviewMouseUp = () => {
+  if (isDragging.value) {
+    isDragging.value = false
+    document.body.style.cursor = ''
+  }
+}
 
 const triggerFileInput = () => {
   fileInput.value.click()
@@ -183,9 +341,6 @@ const removeImage = (event) => {
 
 const resetResults = () => {
   analysisResult.value = null
-  comparisonImage.value = null
-  originalLab.value = null
-  redRegionLab.value = null
 }
 
 const processFile = (file) => {
@@ -210,45 +365,6 @@ const processFile = (file) => {
   reader.readAsDataURL(file)
 }
 
-// 获取进度条宽度
-const getProgressWidth = (channel, value) => {
-  // 根据不同通道设置不同的最大值
-  const maxValues = {
-    'L': 100, // L 通道范围通常为 0-100
-    'A': 128, // a* 通道范围通常为 -128 到 +127
-    'B': 128  // b* 通道范围通常为 -128 到 +127
-  }
-
-  // 对于 A 和 B 通道，需要将负值转换为正值的百分比
-  if (channel === 'A' || channel === 'B') {
-    // 将 -128 到 +127 映射到 0-100%
-    return ((value + 128) / 256) * 100
-  } else {
-    // L 通道直接计算百分比
-    return (value / maxValues[channel]) * 100
-  }
-}
-
-// 获取通道对应的颜色
-const getColorForChannel = (channel) => {
-  const colors = {
-    'L': '#333333', // 亮度通道用灰色表示
-    'A': '#ff5252', // a* 通道用红绿色表示
-    'B': '#2196f3'  // b* 通道用蓝黄色表示
-  }
-  return colors[channel] || '#409EFF'
-}
-
-// 获取通道描述
-const getChannelDescription = (channel) => {
-  const descriptions = {
-    'L': '亮度 (0-100)',
-    'A': '红绿轴 (-128 到 +127)',
-    'B': '蓝黄轴 (-128 到 +127)'
-  }
-  return descriptions[channel] || ''
-}
-
 const submitImage = async () => {
   if (!uploadedImage.value) {
     ElMessage.warning('请先上传图片')
@@ -263,27 +379,12 @@ const submitImage = async () => {
   })
 
   try {
-    const response = await leafSheathIdentify({
+    const response = await ymAnalyzer({
       image: uploadedImage.value
     })
 
     if (response.code === 200) {
       analysisResult.value = response.data
-
-      // 处理对比图片
-      const comparisonImageData = response.data.comparison_image
-      if (comparisonImageData) {
-        if (comparisonImageData.startsWith('data:image')) {
-          comparisonImage.value = comparisonImageData
-        } else {
-          comparisonImage.value = `data:image/jpeg;base64,${comparisonImageData}`
-        }
-      }
-
-      // 处理 LAB 值
-      originalLab.value = response.data.lab_values.original
-      redRegionLab.value = response.data.lab_values.red_region
-
       ElMessage.success('识别完成')
     } else {
       ElMessage.error(response.message || '识别失败')
@@ -297,19 +398,71 @@ const submitImage = async () => {
   }
 }
 
-// 复制 LAB 值到剪贴板
-const copyLabValues = (labValues, title) => {
-  if (!labValues) return
+// 处理图片URL
+const getImageUrl = (dataUrl) => {
+  if (!dataUrl) return ''
+  if (dataUrl.startsWith('data:image')) {
+    return dataUrl
+  } else {
+    return `data:image/jpeg;base64,${dataUrl}`
+  }
+}
+
+// 获取宽度百分比
+const getWidthPercentage = (width) => {
+  // 找到最大宽度值作为基准
+  if (!analysisResult.value?.results?.[0]?.midline_widths) return 0
+  const maxWidth = Math.max(...analysisResult.value.results[0].midline_widths)
+  return maxWidth > 0 ? (width / maxWidth) * 100 : 0
+}
+
+// 获取比例百分比
+const getRatioPercentage = (ratio) => {
+  // 找到最大比例值作为基准
+  if (!analysisResult.value?.results?.[0]?.ratios) return 0
+  const ratios = analysisResult.value.results[0].ratios
+  const maxRatio = Math.max(ratios.ratio_1_3, ratios.ratio_1_5, ratios.ratio_3_5)
+  return maxRatio > 0 ? (ratio / maxRatio) * 100 : 0
+}
+
+// 一键复制所有数据
+const copyAllData = () => {
+  if (!analysisResult.value) return
   
-  const formatValue = (value) => value.toFixed(2)
-  const text = `${title}:\nL: ${formatValue(labValues.L)}\nA: ${formatValue(labValues.A)}\nB: ${formatValue(labValues.B)}`
+  const result = analysisResult.value.results?.[0]
+  if (!result) return
   
-  navigator.clipboard.writeText(text).then(() => {
-    ElMessage.success('复制成功')
+  const dataText = `玉米整体分析数据
+
+识别统计:
+- 玉米数量: ${analysisResult.value.ym_count}
+- 形状类型: ${result.shape_type}
+
+中线宽度数据:
+${result.midline_widths.map((width, index) => `- 位置${index + 1}: ${width}`).join('\n')}
+
+比例数据:
+- 1:3 比例: ${result.ratios.ratio_1_3.toFixed(4)}
+- 1:5 比例: ${result.ratios.ratio_1_5.toFixed(4)}
+- 3:5 比例: ${result.ratios.ratio_3_5.toFixed(4)}
+
+分析时间: ${new Date().toLocaleString('zh-CN')}`
+
+  navigator.clipboard.writeText(dataText).then(() => {
+    ElMessage.success('数据复制成功')
   }).catch(() => {
     ElMessage.error('复制失败，请手动复制')
   })
 }
+
+onMounted(() => {
+  window.addEventListener('mousemove', onPreviewMouseMove)
+  window.addEventListener('mouseup', onPreviewMouseUp)
+})
+onBeforeUnmount(() => {
+  window.removeEventListener('mousemove', onPreviewMouseMove)
+  window.removeEventListener('mouseup', onPreviewMouseUp)
+})
 </script>
 
 <style scoped>
@@ -494,9 +647,12 @@ const copyLabValues = (labValues, title) => {
   transition: all 0.3s;
 }
 
-.image-preview:hover img, .result-image:hover img {
+.image-preview:hover img {
   transform: scale(1.02);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+.result-image:hover img {
+  transform: scale(1.02) rotate(180deg);
 }
 
 .image-actions {
@@ -522,104 +678,318 @@ const copyLabValues = (labValues, title) => {
   padding: 10px;
 }
 
-.lab-charts {
-  margin-bottom: 25px;
+.result-images {
+  margin-bottom: 20px;
 }
 
-.chart-container {
-  background-color: #ffffff;
-  border-radius: 12px;
-  padding: 20px;
-  margin-bottom: 20px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+.image-grid {
+  display: flex;
+  gap: 20px;
+}
+
+.image-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.image-item h4 {
+  margin-bottom: 10px;
+  font-size: 18px;
+  color: #303133;
+  font-weight: 600;
+}
+
+.image-item img {
+  max-width: 100%;
+  max-height: 500px;
+  object-fit: contain;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   transition: all 0.3s;
 }
 
-.chart-container:hover {
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+.flipped-image {
+  transform: rotate(180deg);
+}
+
+.data-analysis-section {
+  margin-top: 30px;
+  padding: 25px;
+  background-color: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.data-analysis-section:hover {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
   transform: translateY(-2px);
 }
 
-.chart-container h3 {
-  display: none; /* 隐藏原来的标题样式 */
-}
-
-.chart-header {
+.section-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid #ebeef5;
+  margin-bottom: 25px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #f0f2f5;
 }
 
-.chart-header h3 {
-  margin: 0;
-  font-size: 18px;
+.section-header h2 {
+  font-size: 24px;
+  font-weight: 700;
   color: #303133;
+  margin: 0;
   display: flex;
   align-items: center;
+  gap: 10px;
+}
+
+.section-header h2::before {
+  content: '';
+  width: 4px;
+  height: 24px;
+  background: linear-gradient(135deg, #409eff, #67c23a);
+  border-radius: 2px;
+}
+
+.charts-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 25px;
+}
+
+.chart-card {
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  border: 1px solid #ebeef5;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.chart-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #409eff, #67c23a, #e6a23c);
+  border-radius: 12px 12px 0 0;
+}
+
+.chart-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.chart-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #303133;
+}
+
+.chart-title .el-icon {
+  font-size: 22px;
+  color: #409eff;
+  filter: drop-shadow(0 2px 4px rgba(64, 158, 255, 0.3));
+}
+
+.chart-content {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.stat-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 15px;
+}
+
+.stat-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px 15px;
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  border-radius: 10px;
+  border: 1px solid #bae6fd;
+  transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(64, 158, 255, 0.2);
+}
+
+.stat-icon {
+  font-size: 28px;
+  color: #409eff;
+  margin-bottom: 12px;
+  filter: drop-shadow(0 2px 4px rgba(64, 158, 255, 0.3));
+}
+
+.stat-info {
+  text-align: center;
+}
+
+.stat-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: #409eff;
+  margin-bottom: 4px;
+  font-family: 'Courier New', monospace;
+}
+
+.stat-label {
+  font-size: 13px;
+  color: #606266;
+  font-weight: 500;
+}
+
+.width-chart {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.width-bar {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 12px;
+  padding: 8px;
+  background-color: rgba(64, 158, 255, 0.05);
+  border-radius: 8px;
+  border: 1px solid rgba(64, 158, 255, 0.1);
+}
+
+.bar-label {
+  font-size: 14px;
+  color: #303133;
+  font-weight: 500;
+  min-width: 60px;
+}
+
+.bar-container {
+  flex: 1;
+  height: 24px;
+  background: linear-gradient(135deg, #f5f7fa 0%, #e4e7ed 100%);
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-right: 15px;
+}
+
+.bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #409eff, #67c23a);
+  border-radius: 12px;
+  transition: width 1s ease;
+  position: relative;
+}
+
+.bar-fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.bar-value {
+  font-size: 16px;
+  color: #409eff;
+  font-weight: 700;
+  min-width: 70px;
+  text-align: center;
+  font-family: 'Courier New', monospace;
+  background: linear-gradient(135deg, #409eff, #67c23a);
+  color: white;
+  padding: 6px 12px;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(64, 158, 255, 0.3);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.ratio-chart {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.ratio-item {
+  display: flex;
+  flex-direction: column;
   gap: 8px;
 }
 
-.lab-card {
-  margin-bottom: 15px;
-  border-radius: 8px;
-  transition: all 0.3s;
-  border: 1px solid #ebeef5;
-  overflow: hidden;
-}
-
-.lab-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
-}
-
-.lab-value {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 10px;
-  align-items: center;
-}
-
-.lab-label {
-  font-weight: bold;
+.ratio-label {
+  font-size: 14px;
   color: #303133;
-  font-size: 15px;
+  font-weight: 500;
 }
 
-.lab-number {
-  font-family: 'Courier New', monospace;
-  font-size: 16px;
-  color: #409eff;
-  font-weight: 600;
-  background-color: rgba(64, 158, 255, 0.1);
-  padding: 2px 8px;
-  border-radius: 4px;
+.ratio-progress {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 .progress-bar {
-  height: 12px;
-  background-color: #f0f2f5;
-  border-radius: 6px;
+  flex: 1;
+  height: 20px;
+  background: linear-gradient(135deg, #f5f7fa 0%, #e4e7ed 100%);
+  border-radius: 10px;
   overflow: hidden;
-  margin-bottom: 8px;
-  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.progress {
+.progress-fill {
   height: 100%;
-  transition: width 0.8s ease;
-  border-radius: 6px;
-  background-image: linear-gradient(to right, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0));
+  background: linear-gradient(90deg, #e6a23c, #f56c6c);
+  border-radius: 10px;
+  transition: width 1s ease;
+  position: relative;
 }
 
-.channel-description {
-  font-size: 12px;
-  color: #909399;
-  margin-top: 6px;
+.progress-fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  animation: shimmer 2s infinite;
+}
+
+.ratio-value {
+  font-size: 13px;
+  color: #303133;
+  font-weight: 600;
+  min-width: 60px;
   text-align: right;
-  font-style: italic;
+  font-family: 'Courier New', monospace;
 }
 
 .action-buttons {
@@ -692,5 +1062,128 @@ const copyLabValues = (labValues, title) => {
   .upload-section, .result-section {
     flex: 1;  /* 在移动端恢复为等比例 */
   }
+
+  .image-grid {
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .image-item img {
+    max-height: 200px;
+  }
+
+  .data-analysis-section {
+    padding: 20px;
+    margin-top: 20px;
+  }
+
+  .section-header {
+    flex-direction: column;
+    gap: 15px;
+    align-items: flex-start;
+  }
+
+  .section-header h2 {
+    font-size: 20px;
+  }
+
+  .charts-container {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .stat-cards {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  .stat-card {
+    padding: 15px 10px;
+  }
+
+  .stat-icon {
+    font-size: 24px;
+  }
+
+  .stat-value {
+    font-size: 18px;
+  }
+
+  .width-chart {
+    gap: 10px;
+  }
+
+  .width-bar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .bar-label {
+    min-width: auto;
+  }
+
+  .bar-container {
+    width: 100%;
+  }
+
+  .ratio-chart {
+    gap: 12px;
+  }
+
+  .ratio-item {
+    gap: 6px;
+  }
+
+  .ratio-progress {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .progress-bar {
+    width: 100%;
+  }
+
+  .ratio-value {
+    min-width: auto;
+    text-align: left;
+  }
+}
+
+.custom-preview-dialog .el-dialog {
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+  background: linear-gradient(135deg, #fff 80%, #f5f7fa 100%);
+}
+.custom-preview-dialog .el-dialog__body {
+  padding: 0 0 24px 0;
+}
+.preview-img-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+  background: #f6f8fa;
+  border-radius: 12px;
+  padding: 0;
+  height: 700px;
+}
+.preview-img-scroll {
+  width: 100%;
+  height: 100%;
+  max-width: 850px;
+  max-height: 700px;
+  overflow: auto;
+  background: #f6f8fa;
+  border-radius: 12px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-sizing: border-box;
+}
+.preview-img-scroll img {
+  display: block;
+  margin: auto;
 }
 </style>

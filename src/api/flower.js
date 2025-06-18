@@ -41,6 +41,14 @@ export const leafSheathIdentify = (data) => {
   })
 }
 
+export const ymAnalyzer = (data) => {
+  return request.post({
+    url: '/ym_analyzer/analyze',
+    data
+  })
+}
+
+
 export const flowerUpload = (data) => {
   return request.post({
     url: '/flower_identify/image',

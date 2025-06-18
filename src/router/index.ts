@@ -36,6 +36,11 @@ const router = createRouter({
           component: () => import('../views/corn/LeafSheathTrait.vue')
         },
         {
+          path: '/corn-analysis',
+          name: 'cornAnalysis',
+          component: () => import('../views/corn/CornAnalysis.vue')
+        },
+        {
           path: '/user-center',
           name: 'userCenter',
           component: () => import('../views/user/UserCenter.vue')
