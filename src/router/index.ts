@@ -28,7 +28,7 @@ const router = createRouter({
         {
           path: '/filament-trait',
           name: 'filamentTrait',
-          component: () => import('../views/corn/FilamentTrait.vue')
+          component: () => import('../views/corn/FilamentTraitFile.vue')
         },
         {
           path: '/leaf-sheath-trait',

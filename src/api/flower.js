@@ -34,6 +34,19 @@ export const filamentIdentify = (data) => {
   })
 }
 
+export const filamentIdentifyFile = (file) => {
+  const formData = new FormData()
+  formData.append('image', file)
+  
+  return request.post({
+    url: '/filament_identify_file/analyze',
+    data: formData,
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  })
+}
+
 export const leafSheathIdentify = (data) => {
   return request.post({
     url: '/leaf_sheath_identify/analyze',
