@@ -33,7 +33,7 @@ const router = createRouter({
         {
           path: '/leaf-sheath-trait',
           name: 'leafSheathTrait',
-          component: () => import('../views/corn/LeafSheathTrait.vue')
+          component: () => import('../views/corn/LeafSheathFileTraitFile.vue')
         },
         {
           path: '/corn-analysis',

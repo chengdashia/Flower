@@ -1,8 +1,8 @@
 <template>
   <div class="corn-trait-container">
     <div class="page-header">
-      <h1 class="page-title">花丝原位识别</h1>
-      <p class="page-description">上传花丝图片，获取LAB颜色空间分析结果</p>
+      <h1 class="page-title">叶鞘识别</h1>
+      <p class="page-description">上传玉米叶鞘图片，获取LAB颜色空间分析结果</p>
     </div>
 
     <div class="content-wrapper">
@@ -143,7 +143,7 @@ import { ref, reactive, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElLoading } from 'element-plus'
 import { Upload, InfoFilled, Delete, DataAnalysis, Histogram, TopRight, Search, CopyDocument } from '@element-plus/icons-vue'
-import { filamentIdentifyFile } from '@/api/flower'
+import { leafSheathIdentifyFile } from '@/api/flower'
 
 const router = useRouter()
 const fileInput = ref(null)
@@ -288,7 +288,7 @@ const submitImage = async () => {
   })
 
   try {
-    const response = await filamentIdentifyFile(uploadedFile.value)
+    const response = await leafSheathIdentifyFile(uploadedFile.value)
     
     if (response.code === 200) {
       analysisResult.value = response.data

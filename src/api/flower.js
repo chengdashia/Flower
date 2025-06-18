@@ -54,6 +54,19 @@ export const leafSheathIdentify = (data) => {
   })
 }
 
+export const leafSheathIdentifyFile = (file) => {
+  const formData = new FormData()
+  formData.append('image', file)
+
+  return request.post({
+    url: '/leaf_sheath_identify_file/analyze',
+    data: formData,
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  })
+}
+
 export const ymAnalyzer = (data) => {
   return request.post({
     url: '/ym_analyzer/analyze',
