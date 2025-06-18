@@ -48,6 +48,18 @@ export const ymAnalyzer = (data) => {
   })
 }
 
+export const ymOverallAnalyzer = (file) => {
+  const formData = new FormData()
+  formData.append('image', file)
+  
+  return request.post({
+    url: '/ym_last_analyzer/analyze',
+    data: formData,
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  })
+}
 
 export const flowerUpload = (data) => {
   return request.post({

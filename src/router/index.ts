@@ -38,7 +38,7 @@ const router = createRouter({
         {
           path: '/corn-analysis',
           name: 'cornAnalysis',
-          component: () => import('../views/corn/CornAnalysis.vue')
+          component: () => import('../views/corn/CornOverallAnalysis.vue')
         },
         {
           path: '/user-center',
