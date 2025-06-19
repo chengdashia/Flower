@@ -49,15 +49,15 @@
             <div class="result-images" v-if="resultImages">
               <div class="result-image-item" v-if="resultImages.comparison">
                 <h4>对比图片</h4>
-                <img :src="getImageUrl(resultImages.comparison)" alt="对比图片" />
+                <img :src="getImageUrl(resultImages.comparison)" alt="对比图片" style="cursor:pointer;" @click="openPreview(getImageUrl(resultImages.comparison))" />
               </div>
               <div class="result-image-item" v-if="resultImages.red_region">
                 <h4>红色区域</h4>
-                <img :src="getImageUrl(resultImages.red_region)" alt="红色区域" />
+                <img :src="getImageUrl(resultImages.red_region)" alt="红色区域" style="cursor:pointer;" @click="openPreview(getImageUrl(resultImages.red_region))" />
               </div>
               <div class="result-image-item" v-if="resultImages.white_background">
                 <h4>白色背景</h4>
-                <img :src="getImageUrl(resultImages.white_background)" alt="白色背景" />
+                <img :src="getImageUrl(resultImages.white_background)" alt="白色背景" style="cursor:pointer;" @click="openPreview(getImageUrl(resultImages.white_background))" />
               </div>
             </div>
           </div>
@@ -135,6 +135,8 @@
         <span>{{ isLoading ? '识别中...' : '开始识别' }}</span>
       </el-button>
     </div>
+
+    <ImagePreviewDialog :visible="previewDialogVisible" :imageUrl="previewImageUrl" @update:visible="val => previewDialogVisible = val" />
   </div>
 </template>
 
@@ -144,6 +146,7 @@ import { useRouter } from 'vue-router'
 import { ElMessage, ElLoading } from 'element-plus'
 import { Upload, InfoFilled, Delete, DataAnalysis, Histogram, TopRight, Search, CopyDocument } from '@element-plus/icons-vue'
 import { filamentIdentifyFile } from '@/api/flower'
+import ImagePreviewDialog from '@/components/common/ImagePreviewDialog.vue'
 
 const router = useRouter()
 const fileInput = ref(null)
@@ -155,6 +158,8 @@ const originalLab = ref(null)
 const redRegionLab = ref(null)
 const isDragging = ref(false)
 const isLoading = ref(false)
+const previewDialogVisible = ref(false)
+const previewImageUrl = ref('')
 
 // 获取图片完整URL
 const getImageUrl = (imagePath) => {
@@ -325,6 +330,11 @@ const copyLabValues = (labValues, title) => {
   }).catch(() => {
     ElMessage.error('复制失败，请手动复制')
   })
+}
+
+const openPreview = (imgUrl) => {
+  previewImageUrl.value = imgUrl
+  previewDialogVisible.value = true
 }
 
 // 清理临时URL

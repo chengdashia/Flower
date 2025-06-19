@@ -57,14 +57,14 @@
         <div class="image-option-wrapper">
           <h3 class="image-title">正面图片</h3>
           <div class="image-option" :class="{ selected: selectedImage === 'front' }" @click="selectImage('front')">
-            <img v-if="frontImageUrl" :src="getFullImageUrl(frontImageUrl)" alt="正面图片" />
+            <img v-if="frontImageUrl" :src="getFullImageUrl(frontImageUrl)" alt="正面图片" style="cursor:pointer;" @click.stop="openPreview(getFullImageUrl(frontImageUrl))" />
             <div v-else class="no-image">无图片</div>
           </div>
         </div>
         <div class="image-option-wrapper">
           <h3 class="image-title">背面图片</h3>
           <div class="image-option" :class="{ selected: selectedImage === 'back' }" @click="selectImage('back')">
-            <img v-if="backImageUrl" :src="getFullImageUrl(backImageUrl)" alt="背面图片" />
+            <img v-if="backImageUrl" :src="getFullImageUrl(backImageUrl)" alt="背面图片" style="cursor:pointer;" @click.stop="openPreview(getFullImageUrl(backImageUrl))" />
             <div v-else class="no-image">无图片</div>
           </div>
         </div>
@@ -78,6 +78,7 @@
         </span>
       </template>
     </el-dialog>
+    <ImagePreviewDialog :visible="previewDialogVisible" :imageUrl="previewImageUrl" @update:visible="val => previewDialogVisible = val" />
   </div>
 </template>
 
@@ -94,6 +95,7 @@ import { TitleComponent, TooltipComponent, GridComponent, LegendComponent } from
 import VChart from 'vue-echarts'
 import { getApiUrl } from '@/utils/env';
 import { chrCrop, chrPredict } from '@/api/flower'
+import ImagePreviewDialog from '@/components/common/ImagePreviewDialog.vue'
 
 // 注册必要的组件
 use([CanvasRenderer, PieChart, TitleComponent, TooltipComponent, GridComponent, LegendComponent])
@@ -113,6 +115,8 @@ const frontImageUrl = ref('')
 const backImageUrl = ref('')
 const selectedImage = ref('')
 const uploader = ref(null)
+const previewDialogVisible = ref(false)
+const previewImageUrl = ref('')
 
 const action = '#' // 不需要直接上传到服务器，由父组件处理
 
@@ -377,6 +381,11 @@ const generateResultHtml = (preds, msg) => {
 // 跳转到历史记录
 const goToHistory = () => {
   window.location.href = '/user_history'
+}
+
+const openPreview = (imgUrl) => {
+  previewImageUrl.value = imgUrl
+  previewDialogVisible.value = true
 }
 </script>
 
@@ -941,4 +950,4 @@ button:disabled {
   margin-top: 10px;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
 }
-</style>@/api/flower
+</style>
