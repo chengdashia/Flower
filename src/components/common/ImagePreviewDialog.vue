@@ -21,7 +21,7 @@
              :style="{
                maxWidth: '1600px',
                maxHeight: '1200px',
-               transform: `scale(${previewScale}) ${previewFlipped ? 'rotate(180deg)' : ''}`,
+               transform: `scale(${previewScale}) rotate(${previewRotate}deg)`,
                transition: 'transform 0.3s',
                cursor: isDragging ? 'grabbing' : 'grab',
                background: '#f6f8fa',
@@ -47,7 +47,7 @@ const props = defineProps({
 
 const emit = defineEmits(['update:visible'])
 
-const previewFlipped = ref(false)
+const previewRotate = ref(0)
 const previewScale = ref(1)
 const isDragging = ref(false)
 const previewImgScrollRef = ref(null)
@@ -57,7 +57,7 @@ let scrollStartLeft = 0
 let scrollStartTop = 0
 
 const togglePreviewFlip = () => {
-  previewFlipped.value = !previewFlipped.value
+  previewRotate.value += 90
 }
 const handlePreviewWheel = (e) => {
   e.preventDefault()
@@ -68,7 +68,7 @@ const handlePreviewWheel = (e) => {
 }
 const handlePreviewClose = (done) => {
   previewScale.value = 1
-  previewFlipped.value = false
+  previewRotate.value = 0
   emit('update:visible', false)
   if (props.onClose) props.onClose()
   done && done()
@@ -101,7 +101,7 @@ const onPreviewMouseUp = () => {
 watch(() => props.visible, (val) => {
   if (val) {
     previewScale.value = 1
-    previewFlipped.value = false
+    previewRotate.value = 0
   }
 })
 
