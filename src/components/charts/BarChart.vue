@@ -41,7 +41,14 @@ const chartOption = computed(() => ({
     trigger: 'axis', 
     axisPointer: { 
       type: 'shadow' 
-    } 
+    },
+    formatter: params => {
+      // params 是数组
+      if (Array.isArray(params) && params.length > 0) {
+        return `${params[0].axisValue}<br/>次数: ${params[0].data}`
+      }
+      return ''
+    }
   },
   grid: { 
     left: '3%', 
@@ -56,11 +63,11 @@ const chartOption = computed(() => ({
   },
   yAxis: {
     type: 'value',
-    axisLabel: { formatter: '{value} %' },
+    axisLabel: { formatter: '{value}' },
   },
   series: [
     {
-      name: '可能性 (%)',
+      name: '次数',
       type: 'bar',
       data: props.data,
       emphasis: { focus: 'series' },

@@ -1,43 +1,17 @@
 <template>
   <div class="user-center-container">
-    <el-row :gutter="30">
-      <el-col :span="16">
-        <div class="user-profile-card">
-          <div class="avatar-container">
-            <el-avatar :size="120" :src="userInfo.avatar || 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png'" />
-            <h2 class="username">{{ userInfo.username }}</h2>
-            <p class="user-role">{{ userInfo.role }}</p>
+    <!-- 数据统计图表区块 -->
+    <div class="user-stats-charts-wide card-block">
+      <div class="user-info-compact">
+        <el-avatar :size="80" :src="userInfo.avatar || 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png'" />
+        <div class="user-info-main">
+          <div class="username">{{ userInfo.username }}</div>
+          <div class="user-role">{{ userInfo.role }}</div>
+          <div class="user-stats-row">
+            <div class="stat-item"><div class="stat-num">{{ userInfo.identifyCount }}</div><div class="stat-label">识别次数</div></div>
+            <div class="stat-item"><div class="stat-num">{{ userInfo.registerDays }}</div><div class="stat-label">注册天数</div></div>
           </div>
-          
-          <el-divider>
-            <el-icon><star-filled /></el-icon>
-          </el-divider>
-          
-          <div class="user-stats">
-            <div class="stat-item">
-              <h3>{{ userInfo.identifyCount }}</h3>
-              <p>识别次数</p>
-            </div>
-            <div class="stat-item">
-              <h3>{{ userInfo.registerDays }}</h3>
-              <p>注册天数</p>
-            </div>
-            <div class="stat-item">
-              <h3>{{ userInfo.lastLoginTime }}</h3>
-              <p>上次登录</p>
-            </div>
-          </div>
-          
-          <el-divider>
-            <el-icon><star-filled /></el-icon>
-          </el-divider>
-          
-          <div class="user-created-info">
-            <p v-if="userInfo.created_time">创建时间: {{ userInfo.created_time }}</p>
-            <p v-if="userInfo.updated_time">更新时间: {{ userInfo.updated_time }}</p>
-          </div>
-          
-          <div class="user-actions">
+          <div class="user-actions-row">
             <el-button type="primary" @click="showUserInfoDialog = true" class="edit-info-btn">
               <el-icon><Edit /></el-icon> 修改个人信息
             </el-button>
@@ -46,29 +20,36 @@
             </el-button>
           </div>
         </div>
-      </el-col>
-      
-      <el-col :span="8">
-        <div class="activity-card">
-          <h2 class="section-title">最近活动</h2>
-          
-          <el-timeline>
-            <el-timeline-item
-              v-for="(activity, index) in recentActivities"
-              :key="index"
-              :timestamp="activity.time"
-              :type="activity.type"
-            >
-              {{ activity.content }}
-            </el-timeline-item>
-          </el-timeline>
-          
-          <div class="view-more">
-            <el-button type="text" @click="goToHistory">查看更多历史记录</el-button>
+      </div>
+      <h2 class="section-title">数据统计</h2>
+      <el-row :gutter="32" class="charts-row-wide">
+        <el-col :xs="24" :md="12">
+          <div class="chart-block">
+            <template v-if="weekTotalCounts.length">
+              <BarChart
+                :title="'一周每日识别总次数'"
+                :categories="weekDays"
+                :data="weekTotalCounts"
+                style="width:100%;height:420px;"
+              />
+            </template>
+            <el-empty v-else description="暂无识别记录" />
           </div>
-        </div>
-      </el-col>
-    </el-row>
+        </el-col>
+        <el-col :xs="24" :md="12">
+          <div class="chart-block">
+            <template v-if="weekTypeCountsPie.length">
+              <PieChart
+                :data="weekTypeCountsPie"
+                :option="pieOption"
+                style="width:100%;height:420px;"
+              />
+            </template>
+            <el-empty v-else description="暂无类别识别数据" />
+          </div>
+        </el-col>
+      </el-row>
+    </div>
     
     <!-- 修改密码对话框 -->
     <el-dialog
@@ -152,11 +133,14 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, computed } from 'vue'
 import { StarFilled, Edit, Lock, Plus } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { useRouter } from 'vue-router'
 import { getUserInfo, updateUserInfo } from '../../api/user'
+import BarChart from '@/components/charts/BarChart.vue'
+import PieChart from '@/components/charts/PieChart.vue'
+import { getWeekTotalCount, getWeekActiveUsers, getWeekTypeCount, getWeekUserRank } from '@/api/statistics'
 
 const router = useRouter()
 
@@ -244,6 +228,53 @@ const recentActivities = ref([
     type: 'primary'
   }
 ])
+
+// 图表数据模拟
+const weekDays = ref([])
+const weekTotalCounts = ref([])
+const weekTypeCountsPie = ref([])
+const weekActiveUsers = ref([])
+const userRankNames = ref([])
+const userRankCounts = ref([])
+const loading = ref(false)
+const weekActiveUserCount = ref(0)
+
+const fetchStatistics = async () => {
+  loading.value = true
+  try {
+    const [totalRes, activeRes, typeRes, rankRes] = await Promise.all([
+      getWeekTotalCount(),
+      getWeekActiveUsers(),
+      getWeekTypeCount(),
+      getWeekUserRank()
+    ])
+    // 1. 一周每日识别总次数
+    if (totalRes.code === 200 && Array.isArray(totalRes.data)) {
+      weekDays.value = totalRes.data.map(item => item.date.slice(5))
+      weekTotalCounts.value = totalRes.data.map(item => item.count)
+    }
+    // 2. 活跃用户数
+    if (activeRes.code === 200 && activeRes.data) {
+      weekActiveUserCount.value = activeRes.data.active_user_count || 0
+    }
+    // 3. 各类别识别次数
+    if (typeRes.code === 200 && typeRes.data) {
+      weekTypeCountsPie.value = Object.entries(typeRes.data).map(([k, v]) => ({
+        name: k === 'chr' ? '菊花识别' : k === 'corn' ? '玉米识别' : k === 'filament' ? '花丝识别' : k === 'leaf_sheath' ? '叶鞘识别' : k === 'ym' ? '玉米整体' : k,
+        value: v
+      }))
+    }
+    // 4. 用户识别次数排行
+    if (rankRes.code === 200 && Array.isArray(rankRes.data)) {
+      userRankNames.value = rankRes.data.map(item => item.username)
+      userRankCounts.value = rankRes.data.map(item => item.count)
+    }
+  } catch (e) {
+    ElMessage.error('统计数据获取失败')
+  } finally {
+    loading.value = false
+  }
+}
 
 // 获取用户信息
 const fetchUserInfo = async () => {
@@ -406,316 +437,179 @@ const goToHistory = () => {
 // 页面加载时获取用户信息
 onMounted(() => {
   fetchUserInfo()
+  fetchStatistics()
 })
+
+// 饼图美化option
+const pieOption = computed(() => ({
+  legend: {
+    orient: 'vertical',
+    left: 'left',
+    top: 'center',
+    textStyle: { fontSize: 13 }
+  },
+  series: [
+    {
+      type: 'pie',
+      radius: ['50%', '70%'],
+      avoidLabelOverlap: false,
+      label: {
+        show: true,
+        position: 'outside',
+        fontSize: 12,
+        formatter: '{b} {c}次'
+      },
+      labelLine: {
+        show: true,
+        length: 18,
+        length2: 10
+      }
+    }
+  ]
+}))
 </script>
 
 <style scoped>
 .user-center-container {
-  padding: 30px;
-  max-width: 1400px;
+  padding: 40px 0 40px 0;
+  max-width: 1200px;
   margin: 0 auto;
-  background-color: #f9fafc;
+  background: #fff;
   min-height: calc(100vh - 60px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
-
-.section-title {
-  font-size: 26px;
+.user-stats-charts-wide {
+  width: 100%;
+  max-width: 1100px;
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 6px 24px rgba(0,0,0,0.10);
+  padding: 36px 40px 32px 40px;
+  margin-bottom: 36px;
+}
+.user-info-compact {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  margin-bottom: 18px;
+}
+.user-info-compact .el-avatar {
+  border: 2px solid #e6effd;
+}
+.user-info-main {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+.username {
+  font-size: 28px;
   color: #2c3e50;
-  margin-bottom: 28px;
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+.user-role {
+  color: #5e6d82;
+  font-size: 15px;
+  margin: 0 0 10px 0;
+  background-color: rgba(255, 255, 255, 0.6);
+  padding: 2px 10px;
+  border-radius: 20px;
+  display: inline-block;
+  font-weight: 500;
+}
+.user-stats-row {
+  display: flex;
+  gap: 40px;
+  margin-top: 8px;
+}
+.stat-item {
+  text-align: center;
+}
+.stat-num {
+  font-size: 22px;
+  color: #3498db;
+  font-weight: 700;
+}
+.stat-label {
+  color: #5e6d82;
+  font-size: 13px;
+}
+.user-actions-row {
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+  margin-top: 8px;
+}
+.user-actions-row .el-button {
+  min-width: 120px;
+  font-weight: 500;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(64,158,255,0.06);
+  text-align: center;
+}
+.section-title {
+  font-size: 22px;
+  color: #2c3e50;
+  margin-bottom: 24px;
   font-weight: 700;
   position: relative;
-  padding-bottom: 14px;
+  padding-bottom: 10px;
   letter-spacing: 0.6px;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
-
 .section-title::after {
   content: '';
   position: absolute;
   bottom: 0;
   left: 0;
-  width: 80px;
-  height: 4px;
+  width: 60px;
+  height: 3px;
   background: linear-gradient(90deg, #3498db, #9b59b6);
   border-radius: 6px;
   box-shadow: 0 2px 6px rgba(52, 152, 219, 0.3);
 }
-
-.user-profile-card,
-.user-settings-card,
-.activity-card {
-  border-radius: 20px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-  padding: 35px;
-  background-color: #fff;
-  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  border: 1px solid rgba(0, 0, 0, 0.03);
-  margin-bottom: 35px;
-  overflow: hidden;
-  position: relative;
+.charts-row-wide {
+  margin-top: 10px;
 }
-
-.user-profile-card::before,
-.user-settings-card::before,
-.activity-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 6px;
-  background: linear-gradient(90deg, #3498db, #9b59b6);
-}
-
-.user-profile-card:hover,
-.user-settings-card:hover,
-.activity-card:hover {
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.12);
-  transform: translateY(-5px);
-}
-
-.user-profile-card {
-  background: linear-gradient(135deg, #e8f7fa 0%, #f0f9ff 100%);
-  text-align: center;
-  height: 100%;
-}
-
-.user-settings-card {
-  background: linear-gradient(135deg, #fff5eb 0%, #fff9f0 100%);
-}
-
-.activity-card {
-  background: linear-gradient(135deg, #f0f7ff 0%, #f5f9ff 100%);
-}
-
-.avatar-container {
+.chart-block {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(64,158,255,0.06);
+  padding: 18px 10px 10px 10px;
+  margin-bottom: 18px;
+  min-height: 280px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-bottom: 25px;
-  position: relative;
-}
-
-.avatar-container :deep(.el-avatar) {
-  border: 4px solid white;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
-}
-
-.avatar-container :deep(.el-avatar):hover {
-  transform: scale(1.05);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-}
-
-.username {
-  margin: 18px 0 5px;
-  font-size: 28px;
-  color: #2c3e50;
-  font-weight: 700;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-}
-
-.user-role {
-  color: #5e6d82;
-  font-size: 16px;
-  margin: 0;
-  background-color: rgba(255, 255, 255, 0.6);
-  padding: 4px 12px;
-  border-radius: 20px;
-  display: inline-block;
-  font-weight: 500;
-}
-
-.user-stats {
-  display: flex;
-  justify-content: space-around;
-  margin: 25px 0;
-  padding: 15px 0;
-  background-color: rgba(255, 255, 255, 0.5);
-  border-radius: 15px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
-}
-
-.stat-item {
-  text-align: center;
-  padding: 0 15px;
-  position: relative;
-}
-
-.stat-item:not(:last-child)::after {
-  content: '';
-  position: absolute;
-  right: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  height: 70%;
-  width: 1px;
-  background-color: rgba(0, 0, 0, 0.08);
-}
-
-.stat-item h3 {
-  font-size: 28px;
-  color: #3498db;
-  margin: 0 0 8px;
-  font-weight: 700;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-}
-
-.stat-item p {
-  color: #5e6d82;
-  margin: 0;
-  font-size: 14px;
-  font-weight: 500;
-}
-
-.user-form {
-  margin-top: 30px;
-}
-
-.user-form :deep(.el-form-item__label) {
-  font-weight: 600;
-  color: #2c3e50;
-}
-
-.user-form :deep(.el-input__inner) {
-  border-radius: 8px;
-  padding: 12px 15px;
-  height: auto;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
-  transition: all 0.3s ease;
-}
-
-.user-form :deep(.el-input__inner:focus) {
-  box-shadow: 0 4px 12px rgba(52, 152, 219, 0.15);
-}
-
-.user-form :deep(.el-button) {
-  padding: 12px 24px;
-  border-radius: 8px;
-  font-weight: 600;
-  transition: all 0.3s ease;
-}
-
-.user-form :deep(.el-button--primary) {
-  background: linear-gradient(135deg, #3498db, #2980b9);
-  border: none;
-  box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
-}
-
-.user-form :deep(.el-button--primary:hover) {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 15px rgba(52, 152, 219, 0.4);
-}
-
-.user-form :deep(.el-button--default) {
-  border: 1px solid #dcdfe6;
-  background-color: white;
-  color: #606266;
-}
-
-.user-form :deep(.el-button--default:hover) {
-  border-color: #c0c4cc;
-  color: #409EFF;
-}
-
-.user-created-info {
-  text-align: center;
-  margin-top: 25px;
-  font-size: 14px;
-  color: #5e6d82;
-  background-color: rgba(255, 255, 255, 0.5);
-  padding: 10px;
-  border-radius: 10px;
-}
-
-.user-actions {
-  display: flex;
   justify-content: center;
-  gap: 15px;
-  margin-top: 30px;
 }
-
-.edit-info-btn,
-.change-password-btn {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 20px;
-  border-radius: 10px;
-  font-weight: 600;
-  transition: all 0.3s ease;
-  background: linear-gradient(135deg, #3498db, #2980b9);
-  border: none;
-  box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
-}
-
-.edit-info-btn:hover,
-.change-password-btn:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 15px rgba(52, 152, 219, 0.4);
-}
-
-.view-more {
-  text-align: center;
-  margin-top: 25px;
-}
-
-.view-more :deep(.el-button--text) {
-  color: #3498db;
-  font-weight: 600;
-  font-size: 16px;
-  transition: all 0.3s ease;
-}
-
-.view-more :deep(.el-button--text:hover) {
-  color: #2980b9;
-  transform: translateX(3px);
-}
-
-:deep(.el-timeline-item__node) {
-  background-color: #3498db;
-  box-shadow: 0 0 0 4px rgba(52, 152, 219, 0.2);
-}
-
-:deep(.el-timeline-item__content) {
-  padding: 10px 15px;
-  background-color: white;
-  border-radius: 10px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  transition: all 0.3s ease;
-}
-
-:deep(.el-timeline-item__content:hover) {
-  transform: translateX(5px);
-  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
-}
-
-:deep(.el-timeline-item__timestamp) {
-  color: #5e6d82;
-  font-weight: 500;
-}
-
-/* 响应式调整 */
-@media (max-width: 1200px) {
-  .user-profile-card,
-  .user-settings-card,
-  .activity-card {
-    height: auto;
+@media (max-width: 900px) {
+  .user-stats-charts-wide, .card-block {
+    padding: 18px 6px 12px 6px;
   }
 }
-
 @media (max-width: 768px) {
-  .user-center-container {
-    padding: 20px;
+  .user-info-compact {
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
   }
-  
-  .user-profile-card,
-  .user-settings-card,
-  .activity-card {
-    padding: 25px;
+  .user-actions-row {
+    flex-direction: column;
+    gap: 8px;
+    align-items: stretch;
+    width: 100%;
+  }
+  .user-stats-charts-wide, .card-block {
+    padding: 12px 2px 8px 2px;
+  }
+  .charts-row-wide {
+    flex-direction: column;
   }
 }
-
 /* 对话框样式 */
 :deep(.el-dialog) {
   border-radius: 24px;

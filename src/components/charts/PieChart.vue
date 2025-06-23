@@ -31,7 +31,8 @@ const initChart = () => {
 
     myChart.setOption({
       tooltip: {
-        trigger: 'item'
+        trigger: 'item',
+        formatter: '{b}: {c}次'
       },
       legend: {
         orient: 'vertical',
@@ -51,7 +52,7 @@ const initChart = () => {
           },
           label: {
             show: true,
-            formatter: '{b}\n{d}%'
+            formatter: '{b}\n{c}次'
           },
           labelLine: {
             show: true
@@ -89,7 +90,8 @@ const updateSubChart = () => {
     const mySubChart = echarts.init(subChart.value);
     mySubChart.setOption({
       tooltip: {
-        trigger: 'item'
+        trigger: 'item',
+        formatter: '{b}: {c}次'
       },
       legend: {
         orient: 'vertical',
@@ -109,7 +111,7 @@ const updateSubChart = () => {
           },
           label: {
             show: true,
-            formatter: '{b}\n{d}%'
+            formatter: '{b}\n{c}次'
           },
           labelLine: {
             show: true
