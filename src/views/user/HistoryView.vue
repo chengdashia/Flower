@@ -386,7 +386,7 @@ const totalRecords = ref(0)
 const detailDialogVisible = ref(false)
 const deleteDialogVisible = ref(false)
 const selectedRecord = ref(null)
-const recordToDeleteId = ref(null)
+const recordToDelete = ref({ id: null, type: null })
 
 const typeLabels = {
   chr: '菊花识别',
@@ -503,12 +503,9 @@ const fetchHistoryRecords = async () => {
 
 // 搜索记录
 const searchRecords = () => {
-  if (!filterType.value) {
-    ElMessage.warning('请先选择识别类型')
-    return
-  }
   // 重置页码
   currentPage.value = 1
+  
   // 调用获取记录的方法，传入筛选条件
   fetchHistoryRecords()
 }
@@ -609,27 +606,27 @@ const generatePieChartOptions = (probabilities) => {
 
 // 确认删除
 const confirmDelete = (id) => {
-  recordToDeleteId.value = id
-  deleteDialogVisible.value = true
+  const rec = allHistoryRecords.find(r => r.id === id)
+  if (rec) {
+    recordToDelete.value = { id: rec.id, type: rec.type }
+    deleteDialogVisible.value = true
+  }
 }
 
 // 删除记录
 const deleteRecord = async () => {
   try {
-    // 调用API删除记录
-    console.log(recordToDeleteId.value)
-    const response = await deleteHistory(recordToDeleteId.value)
-    
+    // 调用API删除记录，传type和id
+    const { id, type } = recordToDelete.value
+    const response = await deleteHistory(type, id)
     if (response.code === 200) {
       // 从本地数组中移除记录
-      const index = allHistoryRecords.findIndex(record => record.id === recordToDeleteId.value)
+      const index = allHistoryRecords.findIndex(record => record.id === id)
       if (index !== -1) {
         allHistoryRecords.splice(index, 1)
       }
-      
       // 更新总记录数
       totalRecords.value = allHistoryRecords.length
-      
       ElMessage.success('记录删除成功')
       deleteDialogVisible.value = false
     } else {

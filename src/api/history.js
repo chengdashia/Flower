@@ -17,9 +17,9 @@ export const getHistoryDetail = (id) => {
 }
 
 // 删除历史记录
-export const deleteHistory = (id) => {
+export const deleteHistory = (type,id) => {
   return request.del({
-    url: `/history/delete-history/${id}`
+    url: `/history/delete-history/${type}/${id}`
   })
 }
 
