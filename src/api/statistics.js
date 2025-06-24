@@ -5,21 +5,8 @@ export function getWeekTotalCount() {
         url: '/statistics/week/total-count'
     })
 }
-
-export function getWeekActiveUsers() {
-    return request.get({
-        url: '/statistics/week/active-users'
-    })
-}
-
 export function getWeekTypeCount() {
     return request.get({
         url: '/statistics/week/type-count'
-    })
-}
-
-export function getWeekUserRank() {
-    return request.get({
-        url: '/statistics/week/user-rank'
     })
 }

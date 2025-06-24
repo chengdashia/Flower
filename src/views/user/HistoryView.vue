@@ -370,7 +370,7 @@ import ImagePreviewDialog from '@/components/common/ImagePreviewDialog.vue'
 use([CanvasRenderer, PieChart, TitleComponent, TooltipComponent, LegendComponent])
 
 // API服务器的图片基地址，请根据实际情况修改
-const imageBaseUrl = 'http://127.0.0.1:5000'
+const imageBaseUrl = process.env.VUE_APP_API_URL || 'http://127.0.0.1:5000'
 
 // 筛选条件
 const filterType = ref('chr')

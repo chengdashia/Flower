@@ -134,13 +134,13 @@
 
 <script setup>
 import { ref, reactive, onMounted, computed } from 'vue'
-import { StarFilled, Edit, Lock, Plus } from '@element-plus/icons-vue'
+import { Edit, Lock, Plus } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { useRouter } from 'vue-router'
 import { getUserInfo, updateUserInfo } from '../../api/user'
 import BarChart from '@/components/charts/BarChart.vue'
 import PieChart from '@/components/charts/PieChart.vue'
-import { getWeekTotalCount, getWeekActiveUsers, getWeekTypeCount, getWeekUserRank } from '@/api/statistics'
+import { getWeekTotalCount, getWeekTypeCount } from '@/api/statistics'
 
 const router = useRouter()
 
@@ -210,52 +210,24 @@ const passwordFormRef = ref(null)
 const showPasswordDialog = ref(false)
 const showUserInfoDialog = ref(false)
 
-// 最近活动
-const recentActivities = ref([
-  {
-    content: '识别了一张菊花图片',
-    time: '2023-05-15 14:30',
-    type: 'primary'
-  },
-  {
-    content: '修改了账户信息',
-    time: '2023-05-10 09:45',
-    type: 'success'
-  },
-  {
-    content: '识别了一张玉米图片',
-    time: '2023-05-05 16:20',
-    type: 'primary'
-  }
-])
 
 // 图表数据模拟
 const weekDays = ref([])
 const weekTotalCounts = ref([])
 const weekTypeCountsPie = ref([])
-const weekActiveUsers = ref([])
-const userRankNames = ref([])
-const userRankCounts = ref([])
 const loading = ref(false)
-const weekActiveUserCount = ref(0)
 
 const fetchStatistics = async () => {
   loading.value = true
   try {
-    const [totalRes, activeRes, typeRes, rankRes] = await Promise.all([
+    const [totalRes, typeRes] = await Promise.all([
       getWeekTotalCount(),
-      getWeekActiveUsers(),
       getWeekTypeCount(),
-      getWeekUserRank()
     ])
     // 1. 一周每日识别总次数
     if (totalRes.code === 200 && Array.isArray(totalRes.data)) {
       weekDays.value = totalRes.data.map(item => item.date.slice(5))
       weekTotalCounts.value = totalRes.data.map(item => item.count)
-    }
-    // 2. 活跃用户数
-    if (activeRes.code === 200 && activeRes.data) {
-      weekActiveUserCount.value = activeRes.data.active_user_count || 0
     }
     // 3. 各类别识别次数
     if (typeRes.code === 200 && typeRes.data) {
@@ -263,11 +235,6 @@ const fetchStatistics = async () => {
         name: k === 'chr' ? '菊花识别' : k === 'corn' ? '玉米识别' : k === 'filament' ? '花丝识别' : k === 'leaf_sheath' ? '叶鞘识别' : k === 'ym' ? '玉米整体' : k,
         value: v
       }))
-    }
-    // 4. 用户识别次数排行
-    if (rankRes.code === 200 && Array.isArray(rankRes.data)) {
-      userRankNames.value = rankRes.data.map(item => item.username)
-      userRankCounts.value = rankRes.data.map(item => item.count)
     }
   } catch (e) {
     ElMessage.error('统计数据获取失败')
