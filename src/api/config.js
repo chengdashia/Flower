@@ -12,7 +12,7 @@ const Service = axios.create({
         'Content-Type': "application/json;charset=UTF-8"
     },
     //配置请求超时时间
-    timeout: 10000
+    timeout: 100000
 })
 
 //请求拦截器

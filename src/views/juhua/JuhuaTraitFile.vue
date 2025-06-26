@@ -387,6 +387,40 @@ const openPreview = (imgUrl) => {
   previewImageUrl.value = imgUrl
   previewDialogVisible.value = true
 }
+
+// 复制 LAB 值到剪贴板
+const copyLabValues = (labValues, title) => {
+  if (!labValues) return
+  const formatValue = (value) => value.toFixed(2)
+  const text = `${title}:\nL: ${formatValue(labValues.L)}\nA: ${formatValue(labValues.A)}\nB: ${formatValue(labValues.B)}`
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(() => {
+      ElMessage.success('复制成功')
+    }).catch(() => {
+      ElMessage.error('复制失败，请手动复制')
+    })
+  } else {
+    // 兼容方案
+    const textarea = document.createElement('textarea')
+    textarea.value = text
+    textarea.setAttribute('readonly', '')
+    textarea.style.position = 'absolute'
+    textarea.style.left = '-9999px'
+    document.body.appendChild(textarea)
+    textarea.select()
+    try {
+      const successful = document.execCommand('copy')
+      if (successful) {
+        ElMessage.success('复制成功')
+      } else {
+        ElMessage.error('复制失败，请手动复制')
+      }
+    } catch (err) {
+      ElMessage.error('复制失败，请手动复制')
+    }
+    document.body.removeChild(textarea)
+  }
+}
 </script>
 
 <style scoped>

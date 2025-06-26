@@ -27,7 +27,7 @@
             <div class="file-limit">jpg/png 文件大小小于 30M</div>
           </div>
           <div v-else class="image-preview">
-            <img :src="uploadedImage" alt="上传的图片" />
+            <img :src="uploadedImage" alt="上传的图片" style="cursor:pointer" @click.stop="openPreviewDialog(uploadedImage)" />
             <div class="image-actions">
               <el-button type="danger" size="small" icon="Delete" circle @click.stop="removeImage"></el-button>
             </div>
@@ -47,7 +47,7 @@
           </div>
           <div v-else class="result-content">
             <div class="result-image" v-if="processedImage">
-              <img :src="getImageUrl(processedImage)" alt="处理后的图片" />
+              <img :src="getImageUrl(processedImage)" alt="处理后的图片" style="cursor:pointer" @click="openPreviewDialog(getImageUrl(processedImage))" />
             </div>
           </div>
         </div>
@@ -124,6 +124,8 @@
         <span>{{ isLoading ? '识别中...' : '开始识别' }}</span>
       </el-button>
     </div>
+
+    <ImagePreviewDialog :visible="previewDialogVisible" :imageUrl="previewDialogImageUrl" @update:visible="val => previewDialogVisible = val" />
   </div>
 </template>
 
@@ -133,6 +135,7 @@ import { useRouter } from 'vue-router'
 import { ElMessage, ElLoading } from 'element-plus'
 import { Upload, InfoFilled, Delete, DataAnalysis, Histogram, TopRight, Back, Search, CopyDocument } from '@element-plus/icons-vue'
 import { cornIdentifyFile } from '@/api/flower'
+import ImagePreviewDialog from '@/components/common/ImagePreviewDialog.vue'
 
 const router = useRouter()
 const fileInput = ref(null)
@@ -144,6 +147,8 @@ const meanLab = ref(null)
 const maxALab = ref(null)
 const isDragging = ref(false)
 const isLoading = ref(false)
+const previewDialogVisible = ref(false)
+const previewDialogImageUrl = ref('')
 
 // 获取图片完整URL
 const getImageUrl = (imagePath) => {
@@ -308,12 +313,39 @@ const copyLabValues = (labValues, title) => {
   
   const formatValue = (value) => value.toFixed(2)
   const text = `${title}:\nL: ${formatValue(labValues.L)}\nA: ${formatValue(labValues.A)}\nB: ${formatValue(labValues.B)}`
-  
-  navigator.clipboard.writeText(text).then(() => {
-    ElMessage.success('复制成功')
-  }).catch(() => {
-    ElMessage.error('复制失败，请手动复制')
-  })
+
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(() => {
+      ElMessage.success('复制成功')
+    }).catch(() => {
+      ElMessage.error('复制失败，请手动复制')
+    })
+  } else {
+    // 兼容方案
+    const textarea = document.createElement('textarea')
+    textarea.value = text
+    textarea.setAttribute('readonly', '')
+    textarea.style.position = 'absolute'
+    textarea.style.left = '-9999px'
+    document.body.appendChild(textarea)
+    textarea.select()
+    try {
+      const successful = document.execCommand('copy')
+      if (successful) {
+        ElMessage.success('复制成功')
+      } else {
+        ElMessage.error('复制失败，请手动复制')
+      }
+    } catch (err) {
+      ElMessage.error('复制失败，请手动复制')
+    }
+    document.body.removeChild(textarea)
+  }
+}
+
+const openPreviewDialog = (imgUrl) => {
+  previewDialogImageUrl.value = imgUrl
+  previewDialogVisible.value = true
 }
 
 // 清理临时URL

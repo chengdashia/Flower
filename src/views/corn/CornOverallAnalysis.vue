@@ -450,26 +450,35 @@ const copyAllData = () => {
   const result = analysisResult.value.results?.[0]
   if (!result) return
   
-  const dataText = `玉米整体分析数据
+  const dataText = `玉米整体分析数据\n\n识别统计:\n- 形状类型: ${result.shape_type}\n\n中线宽度数据:\n${result.midline_widths.map((width, index) => `- 位置${index + 1}: ${width}`).join('\\n')}\n\n比例数据:\n- 1:3 比例: ${result.ratios.ratio_1_3.toFixed(4)}\n- 1:5 比例: ${result.ratios.ratio_1_5.toFixed(4)}\n- 3:5 比例: ${result.ratios.ratio_3_5.toFixed(4)}\n\n分析时间: ${new Date().toLocaleString('zh-CN')}`
 
-识别统计:
-- 形状类型: ${result.shape_type}
-
-中线宽度数据:
-${result.midline_widths.map((width, index) => `- 位置${index + 1}: ${width}`).join('\n')}
-
-比例数据:
-- 1:3 比例: ${result.ratios.ratio_1_3.toFixed(4)}
-- 1:5 比例: ${result.ratios.ratio_1_5.toFixed(4)}
-- 3:5 比例: ${result.ratios.ratio_3_5.toFixed(4)}
-
-分析时间: ${new Date().toLocaleString('zh-CN')}`
-
-  navigator.clipboard.writeText(dataText).then(() => {
-    ElMessage.success('数据复制成功')
-  }).catch(() => {
-    ElMessage.error('复制失败，请手动复制')
-  })
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(dataText).then(() => {
+      ElMessage.success('数据复制成功')
+    }).catch(() => {
+      ElMessage.error('复制失败，请手动复制')
+    })
+  } else {
+    // 兼容方案
+    const textarea = document.createElement('textarea')
+    textarea.value = dataText
+    textarea.setAttribute('readonly', '')
+    textarea.style.position = 'absolute'
+    textarea.style.left = '-9999px'
+    document.body.appendChild(textarea)
+    textarea.select()
+    try {
+      const successful = document.execCommand('copy')
+      if (successful) {
+        ElMessage.success('数据复制成功')
+      } else {
+        ElMessage.error('复制失败，请手动复制')
+      }
+    } catch (err) {
+      ElMessage.error('复制失败，请手动复制')
+    }
+    document.body.removeChild(textarea)
+  }
 }
 
 onMounted(() => {
