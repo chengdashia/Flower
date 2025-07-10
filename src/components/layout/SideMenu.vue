@@ -136,6 +136,7 @@ const menuItems = [
         icon: 'DataLine',
         children: [
           { index: '/corn-analysis', title: '玉米整体分析' },
+          { index: '/corn-trait-analysis', title: '玉米性状分析' },
         ]
       },
 
