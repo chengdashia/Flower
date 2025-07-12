@@ -34,69 +34,19 @@
           </div>
         </div>
       </div>
+    </div>
 
-      <div class="result-section">
-        <div class="section-title">
-          <el-icon><DataAnalysis /></el-icon>
-          <span>图片分析展示</span>
-        </div>
-        <div class="result-area">
-          <div v-if="!analysisResult" class="result-placeholder">
-            <el-icon class="info-icon"><InfoFilled /></el-icon>
-            <div>请上传图片进行识别</div>
-          </div>
-          <div v-else class="result-content">
-            <div class="result-images" v-if="analysisResult.results && analysisResult.results.length > 0">
-              <el-row :gutter="18" class="image-row">
-                <el-col :xs="24" :sm="8" v-if="analysisResult.results[0].image.analysis">
-                  <el-card class="image-card">
-                    <div class="image-title">分析图片</div>
-                    <img :src="getImageUrl(analysisResult.results[0].image.analysis)" alt="分析图片" class="result-img" @click="openPreview(getImageUrl(analysisResult.results[0].image.analysis))" />
-                  </el-card>
-                </el-col>
-                <el-col :xs="24" :sm="8" v-if="analysisResult.results[0].image.mask">
-                  <el-card class="image-card">
-                    <div class="image-title">掩码图片</div>
-                    <img :src="getImageUrl(analysisResult.results[0].image.mask)" alt="掩码图片" class="result-img" @click="openPreview(getImageUrl(analysisResult.results[0].image.mask))" />
-                  </el-card>
-                </el-col>
-                <el-col :xs="24" :sm="8" v-if="analysisResult.results[0].image.overlay">
-                  <el-card class="image-card">
-                    <div class="image-title">叠加图片</div>
-                    <img :src="getImageUrl(analysisResult.results[0].image.overlay)" alt="叠加图片" class="result-img" @click="openPreview(getImageUrl(analysisResult.results[0].image.overlay))" />
-                  </el-card>
-                </el-col>
-              </el-row>
-              <el-row :gutter="18" class="image-row" style="margin-top: 12px;">
-                <el-col :xs="24" :sm="6" v-if="analysisResult.results[0].process_single_image?.center_part">
-                  <el-card class="image-card">
-                    <div class="image-title">中心部分</div>
-                    <img :src="getImageUrl(analysisResult.results[0].process_single_image.center_part)" alt="中心部分" class="result-img" @click="openPreview(getImageUrl(analysisResult.results[0].process_single_image.center_part))" />
-                  </el-card>
-                </el-col>
-                <el-col :xs="24" :sm="6" v-if="analysisResult.results[0].process_single_image?.gs_only_image">
-                  <el-card class="image-card">
-                    <div class="image-title">仅灰度图</div>
-                    <img :src="getImageUrl(analysisResult.results[0].process_single_image.gs_only_image)" alt="仅灰度图" class="result-img" @click="openPreview(getImageUrl(analysisResult.results[0].process_single_image.gs_only_image))" />
-                  </el-card>
-                </el-col>
-                <el-col :xs="24" :sm="6" v-if="analysisResult.results[0].process_single_image?.highlight">
-                  <el-card class="image-card">
-                    <div class="image-title">高亮图</div>
-                    <img :src="getImageUrl(analysisResult.results[0].process_single_image.highlight)" alt="高亮图" class="result-img" @click="openPreview(getImageUrl(analysisResult.results[0].process_single_image.highlight))" />
-                  </el-card>
-                </el-col>
-                <el-col :xs="24" :sm="6" v-if="analysisResult.results[0].process_single_image?.unet_result">
-                  <el-card class="image-card">
-                    <div class="image-title">UNet结果</div>
-                    <img :src="getImageUrl(analysisResult.results[0].process_single_image.unet_result)" alt="UNet结果" class="result-img" @click="openPreview(getImageUrl(analysisResult.results[0].process_single_image.unet_result))" />
-                  </el-card>
-                </el-col>
-              </el-row>
-            </div>
-          </div>
-        </div>
-      </div>
+    <!-- 识别按钮 -->
+    <div class="action-buttons" v-if="uploadedFile">
+      <el-button
+          type="success"
+          class="identify-button"
+          @click="submitImage"
+          :loading="isLoading"
+      >
+        <el-icon class="button-icon"><Search /></el-icon>
+        <span>{{ isLoading ? '识别中...' : '开始识别' }}</span>
+      </el-button>
     </div>
 
     <!-- 数据统计和图表区域 -->
@@ -113,61 +63,139 @@
         </el-button>
       </div>
 
-      <div class="charts-container">
-        <!-- 识别统计图表 -->
-        <div class="chart-card">
-          <div class="chart-title">
-            <el-icon><DataAnalysis /></el-icon>
-            <span>识别统计</span>
-          </div>
-          <div class="chart-content">
-            <div class="analysis-summary" v-if="analysisResult.results && analysisResult.results.length > 0">
-              <div class="summary-header">
-                <div class="shape-type-badge">
+      <!-- 第一部分：分段测量数据 -->
+      <div class="data-section">
+        <div class="section-title-wrapper">
+          <div class="section-icon">
                   <el-icon><Histogram /></el-icon>
-                  <span>{{ analysisResult.results[0].shape_type }}</span>
                 </div>
-                <div class="analysis-status">
-                  <el-icon><DataAnalysis /></el-icon>
-                  <span>分析完成</span>
+          <h3 class="section-title">分段测量数据</h3>
+          <div class="section-description">玉米各段落的像素尺寸和实际尺寸测量结果</div>
+          <el-button 
+            type="primary" 
+            @click="copySegmentData"
+            :icon="CopyDocument"
+            size="small"
+            style="margin-left: auto;"
+          >
+            复制数据
+          </el-button>
                 </div>
-              </div>
-              <div class="summary-details">
-                <div class="detail-item">
-                  <div class="detail-label">中线宽度测量点</div>
-                  <div class="detail-value">{{ analysisResult.results[0].midline_widths.length }} 个</div>
-                </div>
-                <div class="detail-item">
-                  <div class="detail-label">最大宽度</div>
-                  <div class="detail-value">{{ Math.max(...analysisResult.results[0].midline_widths) }} px</div>
-                </div>
-                <div class="detail-item">
-                  <div class="detail-label">平均宽度</div>
-                  <div class="detail-value">{{ Math.round(analysisResult.results[0].midline_widths.reduce((a, b) => a + b, 0) / analysisResult.results[0].midline_widths.length) }} px</div>
-                </div>
-                <div class="detail-item" v-if="analysisResult.results[0].process_single_image?.confidence">
-                  <div class="detail-label">置信度</div>
-                  <div class="detail-value" style="color: #67c23a;">{{ (analysisResult.results[0].process_single_image.confidence * 100).toFixed(2) }}%</div>
-                </div>
-              </div>
-            </div>
+        
+        <div class="section-content">
+          <div class="table-container" v-if="analysisResult.results && analysisResult.results[0].zl_lengths && analysisResult.results[0].zl_lengths.length > 0">
+            <el-table 
+              :data="analysisResult.results[0].zl_lengths" 
+              border 
+              style="width: 100%;" 
+              class="measurement-table"
+              :show-header="true"
+              header-align="center"
+            >
+              <el-table-column prop="pixel_height" label="像素高度" width="120" align="center" header-align="center">
+                <template #default="scope">
+                  <span class="table-value">{{ scope.row.pixel_height }} px</span>
+                </template>
+              </el-table-column>
+              <el-table-column prop="pixel_width" label="像素宽度" width="120" align="center" header-align="center">
+                <template #default="scope">
+                  <span class="table-value">{{ scope.row.pixel_width }} px</span>
+                </template>
+              </el-table-column>
+              <el-table-column prop="real_height_cm" label="实际高度(cm)" width="140" align="center" header-align="center">
+                <template #default="scope">
+                  <span class="table-value">{{ scope.row.real_height_cm }} cm</span>
+                </template>
+              </el-table-column>
+              <el-table-column prop="real_width_cm" label="实际宽度(cm)" width="140" align="center" header-align="center">
+                <template #default="scope">
+                  <span class="table-value">{{ scope.row.real_width_cm }} cm</span>
+                </template>
+              </el-table-column>
+            </el-table>
           </div>
-        </div>
+                </div>
+                </div>
 
-        <!-- 中线宽度图表 -->
-        <div class="chart-card" v-if="analysisResult.results && analysisResult.results.length > 0">
-          <div class="chart-title">
-            <el-icon><TrendCharts /></el-icon>
-            <span>中线宽度分布</span>
+      <!-- 第二部分：性状分析结果 -->
+      <div class="data-section">
+        <div class="section-title-wrapper">
+          <div class="section-icon">
+            <el-icon><DataAnalysis /></el-icon>
+                </div>
+          <h3 class="section-title">性状分析结果</h3>
+          <div class="section-description">玉米形态特征和比例分析数据</div>
+          <el-button 
+            type="primary" 
+            @click="copyTraitData"
+            :icon="CopyDocument"
+            size="small"
+            style="margin-left: auto;"
+          >
+            复制数据
+          </el-button>
+              </div>
+        
+        <div class="section-content">
+          <el-row :gutter="25">
+            <!-- 基础信息卡片 -->
+            <el-col :xs="24" :sm="12" :md="8">
+              <div class="info-card">
+                <div class="card-header">
+                  <el-icon><Histogram /></el-icon>
+                  <span>基础信息</span>
+            </div>
+                <div class="card-content">
+                  <div class="info-item">
+                    <div class="info-label">形状类型</div>
+                    <div class="info-value shape-type">{{ analysisResult.results[0].shape_type }}</div>
           </div>
-          <div class="chart-content">
+                  <div class="info-item">
+                    <div class="info-label">测量点数量</div>
+                    <div class="info-value">{{ analysisResult.results[0].midline_widths.length }} 个</div>
+        </div>
+                </div>
+              </div>
+            </el-col>
+
+            <!-- 中线宽度分析 -->
+            <el-col :xs="24" :sm="12" :md="8">
+              <div class="info-card">
+                <div class="card-header">
+                  <el-icon><TrendCharts /></el-icon>
+                  <span>中线宽度分析</span>
+                  <el-button 
+                    type="primary" 
+                    @click="copyWidthData"
+                    :icon="CopyDocument"
+                    size="small"
+                    style="margin-left: auto;"
+                  >
+                    复制
+                  </el-button>
+                </div>
+                <div class="card-content">
+                  <div class="width-summary">
+                    <div class="summary-item">
+                      <div class="summary-label">最大宽度</div>
+                      <div class="summary-value">{{ Math.max(...analysisResult.results[0].midline_widths) }} px</div>
+                    </div>
+                    <div class="summary-item">
+                      <div class="summary-label">平均宽度</div>
+                      <div class="summary-value">{{ Math.round(analysisResult.results[0].midline_widths.reduce((a, b) => a + b, 0) / analysisResult.results[0].midline_widths.length) }} px</div>
+                    </div>
+                    <div class="summary-item">
+                      <div class="summary-label">最小宽度</div>
+                      <div class="summary-value">{{ Math.min(...analysisResult.results[0].midline_widths) }} px</div>
+                    </div>
+                  </div>
             <div class="width-chart">
               <div 
-                v-for="(width, index) in analysisResult.results[0].midline_widths" 
+                      v-for="(width, index) in analysisResult.results[0].midline_widths.slice(0, 8)" 
                 :key="index"
                 class="width-bar"
               >
-                <div class="bar-label">位置{{ index + 1 }}</div>
+                      <div class="bar-label">P{{ index + 1 }}</div>
                 <div class="bar-container">
                   <div 
                     class="bar-fill" 
@@ -179,14 +207,25 @@
             </div>
           </div>
         </div>
+            </el-col>
 
-        <!-- 比例数据图表 -->
-        <div class="chart-card" v-if="analysisResult.results && analysisResult.results.length > 0">
-          <div class="chart-title">
-            <el-icon><PieChart /></el-icon>
-            <span>比例数据</span>
-          </div>
-          <div class="chart-content">
+            <!-- 比例数据 -->
+            <el-col :xs="24" :sm="12" :md="8">
+              <div class="info-card">
+                <div class="card-header">
+                  <el-icon><PieChart /></el-icon>
+                  <span>比例数据</span>
+                  <el-button 
+                    type="primary" 
+                    @click="copyRatioData"
+                    :icon="CopyDocument"
+                    size="small"
+                    style="margin-left: auto;"
+                  >
+                    复制
+                  </el-button>
+                </div>
+                <div class="card-content">
             <div class="ratio-chart">
               <div class="ratio-item">
                 <div class="ratio-label">1:3 比例</div>
@@ -227,77 +266,191 @@
             </div>
           </div>
         </div>
-
-        <!-- 新增 zl_lengths 表格 -->
-        <div class="chart-card" v-if="analysisResult.results && analysisResult.results[0].zl_lengths && analysisResult.results[0].zl_lengths.length > 0">
-          <div class="chart-title">
-            <el-icon><Histogram /></el-icon>
-            <span>分段测量数据</span>
-          </div>
-          <div class="chart-content">
-            <el-table :data="analysisResult.results[0].zl_lengths" border style="width: 100%;">
-              <el-table-column prop="pixel_height" label="像素高度" width="100" />
-              <el-table-column prop="pixel_width" label="像素宽度" width="100" />
-              <el-table-column prop="real_height_cm" label="实际高度(cm)" width="120" />
-              <el-table-column prop="real_width_cm" label="实际宽度(cm)" width="120" />
-            </el-table>
-          </div>
-        </div>
-
-        <!-- 新增 LAB 最大值卡片 -->
-        <div class="chart-card lab-charts" v-if="analysisResult.results && analysisResult.results[0].process_single_image?.lab_max">
-          <div class="chart-header">
-            <h3><el-icon><Histogram /></el-icon> LAB 最大值</h3>
-          </div>
-          <el-row :gutter="20" direction="vertical">
-            <el-col :xs="24" :sm="24" :md="24" v-for="key in ['L','A','B']" :key="'labmax-'+key" style="margin-bottom: 10px;">
-              <el-card class="lab-card" :body-style="{ padding: '15px' }">
-                <div class="lab-value">
-                  <span class="lab-label">{{ key }}:</span>
-                  <span class="lab-number">{{ analysisResult.results[0].process_single_image.lab_max[key]?.toFixed(2) ?? '--' }}</span>
-                </div>
-                <div class="progress-bar">
-                  <div class="progress" :style="{ width: getLabProgressWidth(key, analysisResult.results[0].process_single_image.lab_max[key]) + '%', backgroundColor: getLabColorForChannel(key) }"></div>
-                </div>
-                <div class="channel-description">{{ getLabChannelDescription(key) }}</div>
-              </el-card>
             </el-col>
           </el-row>
-        </div>
-        <!-- 新增 LAB 均值卡片 -->
-        <div class="chart-card lab-charts" v-if="analysisResult.results && analysisResult.results[0].process_single_image?.lab_mean">
-          <div class="chart-header">
-            <h3><el-icon><Histogram /></el-icon> LAB 均值</h3>
+
+          <!-- 分析图片展示（三个主要图片） -->
+          <div class="analysis-images">
+            <div class="images-title">
+              <el-icon><DataAnalysis /></el-icon>
+              <span>分析图片</span>
+            </div>
+            <div class="images-grid" v-if="analysisResult.results && analysisResult.results.length > 0">
+              <el-row :gutter="18" class="image-row">
+                <el-col :xs="24" :sm="8" v-if="analysisResult.results[0].image.analysis">
+                  <el-card class="image-card">
+                    <div class="image-title">分析图片</div>
+                    <img :src="getImageUrl(analysisResult.results[0].image.analysis)" alt="分析图片" class="result-img" @click="openPreview(getImageUrl(analysisResult.results[0].image.analysis))" />
+                  </el-card>
+                </el-col>
+                <el-col :xs="24" :sm="8" v-if="analysisResult.results[0].image.mask">
+                  <el-card class="image-card">
+                    <div class="image-title">掩码图片</div>
+                    <img :src="getImageUrl(analysisResult.results[0].image.mask)" alt="掩码图片" class="result-img" @click="openPreview(getImageUrl(analysisResult.results[0].image.mask))" />
+                  </el-card>
+                </el-col>
+                <el-col :xs="24" :sm="8" v-if="analysisResult.results[0].image.overlay">
+                  <el-card class="image-card">
+                    <div class="image-title">叠加图片</div>
+                    <img :src="getImageUrl(analysisResult.results[0].image.overlay)" alt="叠加图片" class="result-img" @click="openPreview(getImageUrl(analysisResult.results[0].image.overlay))" />
+                  </el-card>
+                </el-col>
+              </el-row>
+            </div>
           </div>
-          <el-row :gutter="20" direction="vertical">
-            <el-col :xs="24" :sm="24" :md="24" v-for="key in ['L','A','B']" :key="'labmean-'+key" style="margin-bottom: 10px;">
-              <el-card class="lab-card" :body-style="{ padding: '15px' }">
-                <div class="lab-value">
-                  <span class="lab-label">{{ key }}:</span>
-                  <span class="lab-number">{{ analysisResult.results[0].process_single_image.lab_mean[key]?.toFixed(2) ?? '--' }}</span>
+        </div>
+      </div>
+
+      <!-- 第三部分：process_single_image数据 -->
+      <div class="data-section">
+        <div class="section-title-wrapper">
+          <div class="section-icon">
+            <el-icon><Histogram /></el-icon>
+          </div>
+          <h3 class="section-title">LAB色彩分析</h3>
+          <div class="section-description">玉米LAB色彩空间的最大值和均值分析</div>
+          <el-button 
+            type="primary" 
+            @click="copyLabData"
+            :icon="CopyDocument"
+            size="small"
+            style="margin-left: auto;"
+          >
+            复制数据
+          </el-button>
+          </div>
+        
+        <div class="section-content">
+          <el-row :gutter="25">
+            <!-- 置信度信息 -->
+            <el-col :xs="24" :sm="8" :md="8" v-if="analysisResult.results && analysisResult.results[0].process_single_image?.confidence">
+              <div class="chart-card">
+                <div class="chart-title">
+                  <el-icon><DataAnalysis /></el-icon>
+                  <span>识别置信度</span>
+                  <el-button 
+                    type="primary" 
+                    @click="copyConfidenceData"
+                    :icon="CopyDocument"
+                    size="small"
+                    style="margin-left: auto;"
+                  >
+                    复制
+                  </el-button>
                 </div>
-                <div class="progress-bar">
-                  <div class="progress" :style="{ width: getLabProgressWidth(key, analysisResult.results[0].process_single_image.lab_mean[key]) + '%', backgroundColor: getLabColorForChannel(key) }"></div>
+                <div class="chart-content">
+                  <div class="confidence-display">
+                    <div class="confidence-value">{{ (analysisResult.results[0].process_single_image.confidence * 100).toFixed(2) }}%</div>
+                    <div class="confidence-bar">
+                      <div class="confidence-fill" :style="{ width: (analysisResult.results[0].process_single_image.confidence * 100) + '%' }"></div>
+                    </div>
+                  </div>
                 </div>
-                <div class="channel-description">{{ getLabChannelDescription(key) }}</div>
+              </div>
+            </el-col>
+
+            <!-- LAB最大值 -->
+            <el-col :xs="24" :sm="8" :md="8" v-if="analysisResult.results && analysisResult.results[0].process_single_image?.lab_max">
+              <div class="chart-card lab-charts">
+                <div class="chart-header">
+                  <h3><el-icon><Histogram /></el-icon> LAB 最大值</h3>
+                  <el-button 
+                    type="primary" 
+                    @click="copyLabMaxData"
+                    :icon="CopyDocument"
+                    size="small"
+                    style="margin-left: auto;"
+                  >
+                    复制
+                  </el-button>
+                </div>
+                <el-row :gutter="20" direction="vertical">
+                  <el-col :xs="24" :sm="24" :md="24" v-for="key in ['L','A','B']" :key="'labmax-'+key" style="margin-bottom: 10px;">
+                    <el-card class="lab-card" :body-style="{ padding: '15px' }">
+                      <div class="lab-value">
+                        <span class="lab-label">{{ key }}:</span>
+                        <span class="lab-number">{{ analysisResult.results[0].process_single_image.lab_max[key]?.toFixed(2) ?? '--' }}</span>
+                      </div>
+                      <div class="progress-bar">
+                        <div class="progress" :style="{ width: getLabProgressWidth(key, analysisResult.results[0].process_single_image.lab_max[key]) + '%', backgroundColor: getLabColorForChannel(key) }"></div>
+                      </div>
+                      <div class="channel-description">{{ getLabChannelDescription(key) }}</div>
+                    </el-card>
+                  </el-col>
+                </el-row>
+              </div>
+            </el-col>
+
+            <!-- LAB均值 -->
+            <el-col :xs="24" :sm="8" :md="8" v-if="analysisResult.results && analysisResult.results[0].process_single_image?.lab_mean">
+              <div class="chart-card lab-charts">
+                <div class="chart-header">
+                  <h3><el-icon><Histogram /></el-icon> LAB 均值</h3>
+                  <el-button 
+                    type="primary" 
+                    @click="copyLabMeanData"
+                    :icon="CopyDocument"
+                    size="small"
+                    style="margin-left: auto;"
+                  >
+                    复制
+                  </el-button>
+                </div>
+                <el-row :gutter="20" direction="vertical">
+                  <el-col :xs="24" :sm="24" :md="24" v-for="key in ['L','A','B']" :key="'labmean-'+key" style="margin-bottom: 10px;">
+                    <el-card class="lab-card" :body-style="{ padding: '15px' }">
+                      <div class="lab-value">
+                        <span class="lab-label">{{ key }}:</span>
+                        <span class="lab-number">{{ analysisResult.results[0].process_single_image.lab_mean[key]?.toFixed(2) ?? '--' }}</span>
+                      </div>
+                      <div class="progress-bar">
+                        <div class="progress" :style="{ width: getLabProgressWidth(key, analysisResult.results[0].process_single_image.lab_mean[key]) + '%', backgroundColor: getLabColorForChannel(key) }"></div>
+                      </div>
+                      <div class="channel-description">{{ getLabChannelDescription(key) }}</div>
+                    </el-card>
+                  </el-col>
+                </el-row>
+              </div>
+            </el-col>
+          </el-row>
+
+          <!-- process_single_image中的四个图片 -->
+          <div class="process-images">
+            <div class="images-title">
+              <el-icon><DataAnalysis /></el-icon>
+              <span>处理图片</span>
+            </div>
+            <div class="images-grid" v-if="analysisResult.results && analysisResult.results.length > 0">
+              <el-row :gutter="18" class="image-row">
+                <el-col :xs="24" :sm="6" v-if="analysisResult.results[0].process_single_image?.center_part">
+                  <el-card class="image-card">
+                    <div class="image-title">中心部分</div>
+                    <img :src="getImageUrl(analysisResult.results[0].process_single_image.center_part)" alt="中心部分" class="result-img" @click="openPreview(getImageUrl(analysisResult.results[0].process_single_image.center_part))" />
+                  </el-card>
+                </el-col>
+                <el-col :xs="24" :sm="6" v-if="analysisResult.results[0].process_single_image?.gs_only_image">
+                  <el-card class="image-card">
+                    <div class="image-title">仅灰度图</div>
+                    <img :src="getImageUrl(analysisResult.results[0].process_single_image.gs_only_image)" alt="仅灰度图" class="result-img" @click="openPreview(getImageUrl(analysisResult.results[0].process_single_image.gs_only_image))" />
+                  </el-card>
+                </el-col>
+                <el-col :xs="24" :sm="6" v-if="analysisResult.results[0].process_single_image?.highlight">
+                  <el-card class="image-card">
+                    <div class="image-title">高亮图</div>
+                    <img :src="getImageUrl(analysisResult.results[0].process_single_image.highlight)" alt="高亮图" class="result-img" @click="openPreview(getImageUrl(analysisResult.results[0].process_single_image.highlight))" />
+                  </el-card>
+                </el-col>
+                <el-col :xs="24" :sm="6" v-if="analysisResult.results[0].process_single_image?.unet_result">
+                  <el-card class="image-card">
+                    <div class="image-title">UNet结果</div>
+                    <img :src="getImageUrl(analysisResult.results[0].process_single_image.unet_result)" alt="UNet结果" class="result-img" @click="openPreview(getImageUrl(analysisResult.results[0].process_single_image.unet_result))" />
               </el-card>
             </el-col>
           </el-row>
         </div>
       </div>
     </div>
-
-    <div class="action-buttons">
-      <el-button
-          type="success"
-          class="identify-button"
-          @click="submitImage"
-          :disabled="!uploadedFile"
-          :loading="isLoading"
-      >
-        <el-icon class="button-icon"><Search /></el-icon>
-        <span>{{ isLoading ? '识别中...' : '开始识别' }}</span>
-      </el-button>
+      </div>
     </div>
 
     <!-- 弹窗预览大图 -->
@@ -555,16 +708,115 @@ const copyAllData = () => {
 
   const dataText = `玉米整体分析数据\n\n识别统计:\n- 形状类型: ${result.shape_type}\n\n中线宽度数据:\n${result.midline_widths.map((width, index) => `- 位置${index + 1}: ${width}`).join('\\n')}\n\n比例数据:\n- 1:3 比例: ${result.ratios.ratio_1_3.toFixed(4)}\n- 1:5 比例: ${result.ratios.ratio_1_5.toFixed(4)}\n- 3:5 比例: ${result.ratios.ratio_3_5.toFixed(4)}\n\nLAB最大值:\n${labMaxText}\n\nLAB均值:\n${labMeanText}\n\n分段测量数据:\n${zlLengthsText}\n\n分析时间: ${new Date().toLocaleString('zh-CN')}`
 
+  copyToClipboard(dataText, '数据复制成功')
+}
+
+// 复制分段测量数据
+const copySegmentData = () => {
+  if (!analysisResult.value?.results?.[0]?.zl_lengths) return
+  
+  const zlLengths = analysisResult.value.results[0].zl_lengths
+  const dataText = `分段测量数据\n\n${zlLengths.map((item, idx) => `段落${idx+1}:\n- 像素高度: ${item.pixel_height} px\n- 像素宽度: ${item.pixel_width} px\n- 实际高度: ${item.real_height_cm} cm\n- 实际宽度: ${item.real_width_cm} cm`).join('\n\n')}\n\n复制时间: ${new Date().toLocaleString('zh-CN')}`
+  
+  copyToClipboard(dataText, '分段测量数据复制成功')
+}
+
+// 复制性状分析数据
+const copyTraitData = () => {
+  if (!analysisResult.value?.results?.[0]) return
+  
+  const result = analysisResult.value.results[0]
+  const dataText = `性状分析结果\n\n基础信息:\n- 形状类型: ${result.shape_type}\n- 测量点数量: ${result.midline_widths.length} 个\n\n中线宽度分析:\n- 最大宽度: ${Math.max(...result.midline_widths)} px\n- 平均宽度: ${Math.round(result.midline_widths.reduce((a, b) => a + b, 0) / result.midline_widths.length)} px\n- 最小宽度: ${Math.min(...result.midline_widths)} px\n\n比例数据:\n- 1:3 比例: ${result.ratios.ratio_1_3.toFixed(4)}\n- 1:5 比例: ${result.ratios.ratio_1_5.toFixed(4)}\n- 3:5 比例: ${result.ratios.ratio_3_5.toFixed(4)}\n\n复制时间: ${new Date().toLocaleString('zh-CN')}`
+  
+  copyToClipboard(dataText, '性状分析数据复制成功')
+}
+
+// 复制中线宽度数据
+const copyWidthData = () => {
+  if (!analysisResult.value?.results?.[0]?.midline_widths) return
+  
+  const midlineWidths = analysisResult.value.results[0].midline_widths
+  const dataText = `中线宽度数据\n\n${midlineWidths.map((width, index) => `- 位置${index + 1}: ${width} px`).join('\\n')}\n\n复制时间: ${new Date().toLocaleString('zh-CN')}`
+  
+  copyToClipboard(dataText, '中线宽度数据复制成功')
+}
+
+// 复制比例数据
+const copyRatioData = () => {
+  if (!analysisResult.value?.results?.[0]?.ratios) return
+  
+  const ratios = analysisResult.value.results[0].ratios
+  const dataText = `比例数据\n\n1:3 比例: ${ratios.ratio_1_3.toFixed(4)}\n1:5 比例: ${ratios.ratio_1_5.toFixed(4)}\n3:5 比例: ${ratios.ratio_3_5.toFixed(4)}\n\n复制时间: ${new Date().toLocaleString('zh-CN')}`
+  
+  copyToClipboard(dataText, '比例数据复制成功')
+}
+
+// 复制置信度数据
+const copyConfidenceData = () => {
+  if (!analysisResult.value?.results?.[0]?.process_single_image?.confidence) return
+  
+  const confidence = analysisResult.value.results[0].process_single_image.confidence
+  const dataText = `识别置信度\n\n置信度: ${(confidence * 100).toFixed(2)}%\n\n复制时间: ${new Date().toLocaleString('zh-CN')}`
+  
+  copyToClipboard(dataText, '置信度数据复制成功')
+}
+
+// 复制LAB最大值数据
+const copyLabMaxData = () => {
+  if (!analysisResult.value?.results?.[0]?.process_single_image?.lab_max) return
+  
+  const labMax = analysisResult.value.results[0].process_single_image.lab_max
+  const dataText = `LAB最大值\n\nL: ${labMax.L?.toFixed(2) ?? '--'}\nA: ${labMax.A?.toFixed(2) ?? '--'}\nB: ${labMax.B?.toFixed(2) ?? '--'}\n\n复制时间: ${new Date().toLocaleString('zh-CN')}`
+  
+  copyToClipboard(dataText, 'LAB最大值数据复制成功')
+}
+
+// 复制LAB均值数据
+const copyLabMeanData = () => {
+  if (!analysisResult.value?.results?.[0]?.process_single_image?.lab_mean) return
+  
+  const labMean = analysisResult.value.results[0].process_single_image.lab_mean
+  const dataText = `LAB均值\n\nL: ${labMean.L?.toFixed(2) ?? '--'}\nA: ${labMean.A?.toFixed(2) ?? '--'}\nB: ${labMean.B?.toFixed(2) ?? '--'}\n\n复制时间: ${new Date().toLocaleString('zh-CN')}`
+  
+  copyToClipboard(dataText, 'LAB均值数据复制成功')
+}
+
+// 复制LAB数据
+const copyLabData = () => {
+  if (!analysisResult.value?.results?.[0]?.process_single_image) return
+  
+  const processData = analysisResult.value.results[0].process_single_image
+  let dataText = `LAB色彩分析数据\n\n`
+  
+  if (processData.confidence) {
+    dataText += `识别置信度: ${(processData.confidence * 100).toFixed(2)}%\n\n`
+  }
+  
+  if (processData.lab_max) {
+    dataText += `LAB最大值:\n- L: ${processData.lab_max.L?.toFixed(2) ?? '--'}\n- A: ${processData.lab_max.A?.toFixed(2) ?? '--'}\n- B: ${processData.lab_max.B?.toFixed(2) ?? '--'}\n\n`
+  }
+  
+  if (processData.lab_mean) {
+    dataText += `LAB均值:\n- L: ${processData.lab_mean.L?.toFixed(2) ?? '--'}\n- A: ${processData.lab_mean.A?.toFixed(2) ?? '--'}\n- B: ${processData.lab_mean.B?.toFixed(2) ?? '--'}\n\n`
+  }
+  
+  dataText += `复制时间: ${new Date().toLocaleString('zh-CN')}`
+  
+  copyToClipboard(dataText, 'LAB分析数据复制成功')
+}
+
+// 通用复制到剪贴板方法
+const copyToClipboard = (text, successMessage) => {
   if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(dataText).then(() => {
-      ElMessage.success('数据复制成功')
+    navigator.clipboard.writeText(text).then(() => {
+      ElMessage.success(successMessage)
     }).catch(() => {
       ElMessage.error('复制失败，请手动复制')
     })
   } else {
     // 兼容方案
     const textarea = document.createElement('textarea')
-    textarea.value = dataText
+    textarea.value = text
     textarea.setAttribute('readonly', '')
     textarea.style.position = 'absolute'
     textarea.style.left = '-9999px'
@@ -573,7 +825,7 @@ const copyAllData = () => {
     try {
       const successful = document.execCommand('copy')
       if (successful) {
-        ElMessage.success('数据复制成功')
+        ElMessage.success(successMessage)
       } else {
         ElMessage.error('复制失败，请手动复制')
       }
@@ -671,7 +923,7 @@ onBeforeUnmount(() => {
 }
 
 .upload-section {
-  flex: 0.4;  /* 上传区域占40% */
+  flex: 1;  /* 上传区域占满宽度 */
   display: flex;
   flex-direction: column;
   background-color: #ffffff;
@@ -679,20 +931,10 @@ onBeforeUnmount(() => {
   overflow: hidden;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
   transition: all 0.3s ease;
+  width: 100%;
 }
 
-.result-section {
-  flex: 0.6;  /* 结果区域占60% */
-  display: flex;
-  flex-direction: column;
-  background-color: #ffffff;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-  transition: all 0.3s ease;
-}
-
-.upload-section:hover, .result-section:hover {
+.upload-section:hover {
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
   transform: translateY(-2px);
 }
@@ -714,7 +956,7 @@ onBeforeUnmount(() => {
   filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
 }
 
-.upload-area, .result-area {
+.upload-area {
   flex: 1;
   display: flex;
   justify-content: center;
@@ -730,10 +972,6 @@ onBeforeUnmount(() => {
   background-color: rgba(236, 245, 255, 0.3);
 }
 
-.result-area {
-  cursor: default;  /* 结果区域不需要鼠标手型 */
-}
-
 .upload-area.drag-over {
   border-color: #409eff;
   background-color: rgba(64, 158, 255, 0.08);
@@ -741,7 +979,7 @@ onBeforeUnmount(() => {
   box-shadow: 0 0 15px rgba(64, 158, 255, 0.2);
 }
 
-.upload-placeholder, .result-placeholder {
+.upload-placeholder {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -752,7 +990,7 @@ onBeforeUnmount(() => {
   width: 100%;
 }
 
-.upload-icon, .info-icon {
+.upload-icon {
   font-size: 60px;
   margin-bottom: 20px;
   color: #409eff;
@@ -795,7 +1033,7 @@ onBeforeUnmount(() => {
   border-radius: 4px;
 }
 
-.image-preview, .result-image {
+.image-preview {
   width: 100%;
   height: 100%;
   display: flex;
@@ -804,7 +1042,7 @@ onBeforeUnmount(() => {
   position: relative;
 }
 
-.image-preview img, .result-image img {
+.image-preview img {
   max-width: 100%;
   max-height: 100%;
   object-fit: contain;
@@ -815,10 +1053,6 @@ onBeforeUnmount(() => {
 
 .image-preview:hover img {
   transform: scale(1.02);
-}
-
-.result-image:hover img {
-  transform: scale(1.02) rotate(180deg);
 }
 
 .image-actions {
@@ -833,47 +1067,6 @@ onBeforeUnmount(() => {
 .image-preview:hover .image-actions {
   opacity: 1;
   transform: translateY(0);
-}
-
-.result-content {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-  padding: 10px;
-}
-
-.result-images {
-  margin-bottom: 20px;
-}
-
-.image-grid {
-  display: flex;
-  gap: 20px;
-}
-
-.image-item {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.image-item h4 {
-  margin-bottom: 10px;
-  font-size: 18px;
-  color: #303133;
-  font-weight: 600;
-}
-
-.image-item img {
-  max-width: 100%;
-  max-height: 500px;
-  object-fit: contain;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  transition: all 0.3s;
 }
 
 .data-analysis-section {
@@ -917,10 +1110,68 @@ onBeforeUnmount(() => {
   border-radius: 2px;
 }
 
-.charts-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 25px;
+.data-section {
+  margin-bottom: 35px;
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  border-radius: 16px;
+  padding: 25px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  border: 1px solid #ebeef5;
+}
+
+.data-section:hover {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+}
+
+.section-title-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #f0f2f5;
+  flex-wrap: wrap;
+}
+
+.section-icon {
+  width: 50px;
+  height: 50px;
+  background: linear-gradient(135deg, #409eff, #67c23a);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(64, 158, 255, 0.3);
+}
+
+.section-icon .el-icon {
+  font-size: 24px;
+  color: white;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+}
+
+.section-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: #303133;
+  margin: 0;
+}
+
+.section-description {
+  font-size: 14px;
+  color: #909399;
+  margin-left: 65px;
+  margin-top: -15px;
+  flex: 1;
+}
+
+.section-content {
+  padding: 0;
+  background-color: transparent;
+  border-radius: 0;
+  box-shadow: none;
 }
 
 .chart-card {
@@ -932,6 +1183,7 @@ onBeforeUnmount(() => {
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
+  margin-bottom: 25px;
 }
 
 .chart-card::before {
@@ -972,238 +1224,284 @@ onBeforeUnmount(() => {
   gap: 15px;
 }
 
-.analysis-summary {
+.measurement-cards {
+  margin-bottom: 0;
+}
+
+.measurement-card {
   padding: 20px;
-  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
-  border-radius: 10px;
-  border: 1px solid #bae6fd;
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  margin-bottom: 15px;
+  border: 1px solid #ebeef5;
   transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
 }
 
-.analysis-summary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(64, 158, 255, 0.2);
+.measurement-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #409eff, #67c23a);
+  border-radius: 12px 12px 0 0;
 }
 
-.summary-header {
+.measurement-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+}
+
+.segment-number {
+  font-size: 18px;
+  font-weight: 700;
+  color: #303133;
+  background: linear-gradient(135deg, #409eff, #67c23a);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.measurement-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 15px;
-}
-
-.shape-type-badge {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 12px;
-  background: linear-gradient(135deg, #409eff, #67c23a);
-  border-radius: 4px;
-}
-
-.shape-type-badge .el-icon {
-  font-size: 20px;
-  color: white;
-}
-
-.shape-type-badge span {
-  font-size: 16px;
-  font-weight: 600;
-  color: white;
-}
-
-.analysis-status {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 12px;
-  background: linear-gradient(135deg, #409eff, #67c23a);
-  border-radius: 4px;
-}
-
-.analysis-status .el-icon {
-  font-size: 20px;
-  color: white;
-}
-
-.analysis-status span {
-  font-size: 16px;
-  font-weight: 600;
-  color: white;
-}
-
-.summary-details {
-  display: flex;
-  flex-direction: column;
-  margin-top: 15px;
-  gap: 15px;
-}
-
-.detail-item {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
   padding: 8px 0;
   border-bottom: 1px solid rgba(64, 158, 255, 0.1);
 }
 
-.detail-item:last-child {
+.measurement-item:last-child {
   border-bottom: none;
 }
 
-.detail-label {
+.measurement-label {
   font-size: 14px;
   color: #606266;
   font-weight: 500;
-  margin-bottom: 8px;
 }
 
-.detail-value {
-  font-size: 18px;
+.measurement-value {
+  font-size: 16px;
+  font-weight: 700;
+  color: #409eff;
+  font-family: 'Courier New', monospace;
+  background-color: rgba(64, 158, 255, 0.1);
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.info-card {
+  padding: 20px;
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  border: 1px solid #ebeef5;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  height: 100%;
+}
+
+.info-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #409eff, #67c23a, #e6a23c);
+  border-radius: 12px 12px 0 0;
+}
+
+.info-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+}
+
+.info-card .card-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #ebeef5;
+}
+
+.info-card .card-header .el-icon {
+  font-size: 20px;
+  color: #409eff;
+}
+
+.info-card .card-header span {
+  font-size: 16px;
+  font-weight: 600;
+  color: #303133;
+}
+
+.info-card .card-content {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.info-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(64, 158, 255, 0.1);
+}
+
+.info-item:last-child {
+  border-bottom: none;
+}
+
+.info-label {
+  font-size: 14px;
+  color: #606266;
+  font-weight: 500;
+}
+
+.info-value {
+  font-size: 16px;
   font-weight: 700;
   color: #409eff;
   font-family: 'Courier New', monospace;
 }
 
-.width-chart {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+.info-value.shape-type {
+  background: linear-gradient(135deg, #409eff, #67c23a);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 700;
 }
 
-.width-bar {
+.info-value.confidence {
+  color: #67c23a;
+  background-color: rgba(103, 194, 58, 0.1);
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.measurement-card .card-content {
   display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.measurement-card .card-header {
+  display: flex;
+  justify-content: space-between;
   align-items: center;
-  gap: 15px;
-  margin-bottom: 12px;
-  padding: 8px;
+  margin-bottom: 10px;
+}
+
+.width-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  padding: 12px;
   background-color: rgba(64, 158, 255, 0.05);
   border-radius: 8px;
   border: 1px solid rgba(64, 158, 255, 0.1);
 }
 
-.bar-label {
-  font-size: 14px;
-  color: #303133;
-  font-weight: 500;
-  min-width: 60px;
-}
-
-.bar-container {
-  flex: 1;
-  height: 24px;
-  background: linear-gradient(135deg, #f5f7fa 0%, #e4e7ed 100%);
-  border-radius: 12px;
-  overflow: hidden;
-  position: relative;
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
-  margin-right: 15px;
-}
-
-.bar-fill {
-  height: 100%;
-  background: linear-gradient(90deg, #409eff, #67c23a);
-  border-radius: 12px;
-  transition: width 1s ease;
-  position: relative;
-}
-
-.bar-fill::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-  animation: shimmer 2s infinite;
-}
-
-@keyframes shimmer {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(100%); }
-}
-
-.bar-value {
-  font-size: 16px;
-  color: #409eff;
-  font-weight: 700;
-  min-width: 70px;
+.summary-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   text-align: center;
-  font-family: 'Courier New', monospace;
-  background: linear-gradient(135deg, #409eff, #67c23a);
-  color: white;
-  padding: 6px 12px;
-  border-radius: 6px;
-  box-shadow: 0 2px 8px rgba(64, 158, 255, 0.3);
-  border: 2px solid rgba(255, 255, 255, 0.3);
 }
 
-.ratio-chart {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-}
-
-.ratio-item {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.ratio-label {
-  font-size: 14px;
-  color: #303133;
+.summary-label {
+  font-size: 12px;
+  color: #606266;
   font-weight: 500;
+  margin-bottom: 4px;
 }
 
-.ratio-progress {
+.summary-value {
+  font-size: 16px;
+  font-weight: 700;
+  color: #409eff;
+  font-family: 'Courier New', monospace;
+}
+
+.analysis-images {
+  margin-top: 25px;
+  padding-top: 20px;
+  border-top: 2px solid #f0f2f5;
+}
+
+.images-title {
   display: flex;
   align-items: center;
-  gap: 12px;
-}
-
-.progress-bar {
-  flex: 1;
-  height: 20px;
-  background: linear-gradient(135deg, #f5f7fa 0%, #e4e7ed 100%);
-  border-radius: 10px;
-  overflow: hidden;
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.progress-fill {
-  height: 100%;
-  background: linear-gradient(90deg, #e6a23c, #f56c6c);
-  border-radius: 10px;
-  transition: width 1s ease;
-  position: relative;
-}
-
-.progress-fill::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
-  animation: shimmer 2s infinite;
-}
-
-.ratio-value {
-  font-size: 13px;
-  color: #303133;
+  gap: 10px;
+  margin-bottom: 15px;
+  font-size: 18px;
   font-weight: 600;
-  min-width: 60px;
-  text-align: right;
-  font-family: 'Courier New', monospace;
+  color: #303133;
+}
+
+.images-title .el-icon {
+  font-size: 20px;
+  color: #409eff;
+}
+
+.images-grid {
+  margin-bottom: 0;
+}
+
+.image-row {
+  margin-bottom: 0;
+}
+
+.image-card {
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  margin-bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.image-title {
+  text-align: center;
+  font-size: 15px;
+  font-weight: 600;
+  color: #303133;
+  margin-bottom: 8px;
+  margin-top: 4px;
+}
+
+.result-img {
+  max-height: 180px;
+  width: auto;
+  max-width: 100%;
+  object-fit: contain;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.result-img:hover {
+  transform: scale(1.04);
+  box-shadow: 0 4px 16px rgba(64,158,255,0.18);
 }
 
 .action-buttons {
   display: flex;
   justify-content: center;
-  margin-top: 10px;
+  margin: 30px 0;
+  padding: 20px;
 }
 
 .identify-button {
@@ -1295,70 +1593,53 @@ onBeforeUnmount(() => {
     font-size: 20px;
   }
 
-  .charts-container {
-    grid-template-columns: 1fr;
-    gap: 20px;
+  .data-section {
+    padding: 20px;
+    margin-bottom: 25px;
   }
 
-  .analysis-summary {
+  .section-title-wrapper {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .section-icon {
+    width: 40px;
+    height: 40px;
+  }
+
+  .section-icon .el-icon {
+    font-size: 20px;
+  }
+
+  .section-title {
+    font-size: 18px;
+  }
+
+  .section-description {
+    margin-left: 0;
+    margin-top: 0;
+  }
+
+  .measurement-card {
     padding: 15px;
   }
 
-  .summary-header {
+  .info-card {
+    padding: 15px;
+    margin-bottom: 15px;
+  }
+
+  .width-summary {
     flex-direction: column;
     gap: 10px;
   }
 
-  .shape-type-badge {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .shape-type-badge .el-icon {
-    font-size: 24px;
-  }
-
-  .shape-type-badge span {
-    font-size: 16px;
-  }
-
-  .analysis-status {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .analysis-status .el-icon {
-    font-size: 24px;
-  }
-
-  .analysis-status span {
-    font-size: 16px;
-  }
-
-  .summary-details {
-    flex-direction: column;
-    gap: 15px;
-  }
-
-  .detail-item {
-    flex-direction: column;
-    align-items: flex-start;
+  .summary-item {
     width: 100%;
-    padding: 8px 0;
-    border-bottom: 1px solid rgba(64, 158, 255, 0.1);
-  }
-
-  .detail-item:last-child {
-    border-bottom: none;
-  }
-
-  .detail-label {
-    margin-bottom: 0;
-    font-size: 13px;
-  }
-
-  .detail-value {
-    font-size: 16px;
+    flex-direction: row;
+    justify-content: space-between;
   }
 
   .width-chart {
@@ -1400,6 +1681,82 @@ onBeforeUnmount(() => {
   .ratio-value {
     min-width: auto;
     text-align: left;
+  }
+
+  .image-row {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .image-card {
+    margin-bottom: 10px;
+  }
+
+  .result-img {
+    max-height: 120px;
+  }
+
+  .chart-card {
+    margin-bottom: 15px;
+  }
+
+  .lab-charts {
+    margin-bottom: 15px;
+  }
+
+  .lab-card {
+    padding: 10px;
+    margin-bottom: 10px;
+  }
+
+  .lab-value {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .lab-label {
+    font-size: 14px;
+  }
+
+  .lab-number {
+    font-size: 14px;
+  }
+
+  .chart-title {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .chart-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  /* 移动端表格样式 */
+  .measurement-table {
+    font-size: 12px;
+  }
+
+  .measurement-table :deep(.el-table__header th) {
+    font-size: 12px;
+    padding: 8px 4px;
+  }
+
+  .measurement-table :deep(.el-table__body td) {
+    padding: 8px 4px;
+  }
+
+  .table-value {
+    font-size: 12px;
+    padding: 2px 6px;
+  }
+
+  .segment-badge {
+    font-size: 11px;
+    padding: 4px 8px;
   }
 }
 
@@ -1515,50 +1872,256 @@ onBeforeUnmount(() => {
   text-align: right;
   font-style: italic;
 }
-.image-row {
-  margin-bottom: 0;
-}
-.image-card {
-  border-radius: 10px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-  margin-bottom: 0;
+
+/* 宽度图表样式 */
+.width-chart {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
+  gap: 12px;
 }
-.image-title {
+
+.width-bar {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 12px;
+  padding: 8px;
+  background-color: rgba(64, 158, 255, 0.05);
+  border-radius: 8px;
+  border: 1px solid rgba(64, 158, 255, 0.1);
+}
+
+.bar-label {
+  font-size: 14px;
+  color: #303133;
+  font-weight: 500;
+  min-width: 60px;
+}
+
+.bar-container {
+  flex: 1;
+  height: 24px;
+  background: linear-gradient(135deg, #f5f7fa 0%, #e4e7ed 100%);
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-right: 15px;
+}
+
+.bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #409eff, #67c23a);
+  border-radius: 12px;
+  transition: width 1s ease;
+  position: relative;
+}
+
+.bar-fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.bar-value {
+  font-size: 16px;
+  color: #409eff;
+  font-weight: 700;
+  min-width: 70px;
   text-align: center;
-  font-size: 15px;
+  font-family: 'Courier New', monospace;
+  background: linear-gradient(135deg, #409eff, #67c23a);
+  color: white;
+  padding: 6px 12px;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(64, 158, 255, 0.3);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+/* 比例图表样式 */
+.ratio-chart {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.ratio-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ratio-label {
+  font-size: 14px;
+  color: #303133;
+  font-weight: 500;
+}
+
+.ratio-progress {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.progress-bar {
+  flex: 1;
+  height: 20px;
+  background: linear-gradient(135deg, #f5f7fa 0%, #e4e7ed 100%);
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #e6a23c, #f56c6c);
+  border-radius: 10px;
+  transition: width 1s ease;
+  position: relative;
+}
+
+.progress-fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  animation: shimmer 2s infinite;
+}
+
+.ratio-value {
+  font-size: 13px;
+  color: #303133;
+  font-weight: 600;
+  min-width: 60px;
+  text-align: right;
+  font-family: 'Courier New', monospace;
+}
+
+/* 表格样式 */
+.table-container {
+  margin-bottom: 0;
+}
+
+.table-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  padding: 10px 15px;
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  border-radius: 8px;
+  border: 1px solid #bae6fd;
+}
+
+.table-header h4 {
+  margin: 0;
+  font-size: 16px;
   font-weight: 600;
   color: #303133;
-  margin-bottom: 8px;
-  margin-top: 4px;
 }
-.result-img {
-  max-height: 180px;
-  width: auto;
-  max-width: 100%;
-  object-fit: contain;
+
+.measurement-table {
   border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.10);
-  cursor: pointer;
-  transition: transform 0.2s;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
 }
-.result-img:hover {
-  transform: scale(1.04);
-  box-shadow: 0 4px 16px rgba(64,158,255,0.18);
+
+.measurement-table :deep(.el-table__header) {
+  background: linear-gradient(135deg, #409eff, #67c23a) !important;
+  display: table-header-group !important;
 }
-@media (max-width: 768px) {
-  .image-row {
+
+.measurement-table :deep(.el-table__header th) {
+  background: transparent !important;
+  color: #303133 !important; /* 改为深色 */
+  font-weight: 600 !important;
+  border-bottom: none !important;
+  text-align: center !important;
+  padding: 12px 0 !important;
+}
+
+.measurement-table :deep(.el-table__body tr:hover) {
+  background-color: rgba(64, 158, 255, 0.05);
+}
+
+.measurement-table :deep(.el-table__body td) {
+  border-bottom: 1px solid #ebeef5;
+}
+
+.table-value {
+  font-family: 'Courier New', monospace;
+  font-weight: 600;
+  color: #409eff;
+  background-color: rgba(64, 158, 255, 0.1);
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+/* 置信度显示样式 */
+.confidence-display {
+  display: flex;
     flex-direction: column;
     gap: 10px;
-  }
-  .image-card {
-    margin-bottom: 10px;
-  }
-  .result-img {
-    max-height: 120px;
-  }
+  align-items: center;
+}
+
+.confidence-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: #67c23a;
+  font-family: 'Courier New', monospace;
+  background: linear-gradient(135deg, #67c23a, #85ce61);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.confidence-bar {
+  width: 100%;
+  height: 20px;
+  background: linear-gradient(135deg, #f5f7fa 0%, #e4e7ed 100%);
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.confidence-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #67c23a, #85ce61);
+  border-radius: 10px;
+  transition: width 1s ease;
+  position: relative;
+}
+
+.confidence-fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  animation: shimmer 2s infinite;
+}
+
+/* 处理图片样式 */
+.process-images {
+  margin-top: 25px;
+  padding-top: 20px;
+  border-top: 2px solid #f0f2f5;
 }
 </style>
