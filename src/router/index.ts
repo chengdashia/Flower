@@ -36,14 +36,14 @@ const router = createRouter({
           component: () => import('../views/corn/LeafSheathFileTraitFile.vue')
         },
         {
-          path: '/corn-analysis',
-          name: 'cornAnalysis',
-          component: () => import('../views/corn/CornOverallAnalysis.vue')
+          path: '/corn-shape-analysis',
+          name: 'cornShapeAnalysis',
+          component: () => import('../views/corn/CornShapeAnalysis.vue')
         },
         {
-          path: '/corn-trait-analysis',
-          name: 'cornTraitAnalysis',
-          component: () => import('../views/corn/CornTraitAnalysis.vue')
+          path: '/corn-overall-analysis',
+          name: 'cornOverallAnalysis',
+          component: () => import('../views/corn/CornOverallAnalysis.vue')
         },
         {
           path: '/user-center',

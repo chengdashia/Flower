@@ -135,8 +135,8 @@ const menuItems = [
         title: '玉米分析',
         icon: 'DataLine',
         children: [
-          { index: '/corn-analysis', title: '玉米整体分析' },
-          { index: '/corn-trait-analysis', title: '玉米性状分析' },
+          { index: '/corn-shape-analysis', title: '玉米形状分析' },
+          { index: '/corn-overall-analysis', title: '玉米整体分析' },
         ]
       },
 
