@@ -42,7 +42,7 @@
               <PieChart
                 :data="weekTypeCountsPie"
                 :option="pieOption"
-                style="width:100%;height:420px;"
+                style="width:100%;height:420px;margin-top: -100px;"
               />
             </template>
             <el-empty v-else description="暂无类别识别数据" />
@@ -232,7 +232,7 @@ const fetchStatistics = async () => {
     // 3. 各类别识别次数
     if (typeRes.code === 200 && typeRes.data) {
       weekTypeCountsPie.value = Object.entries(typeRes.data).map(([k, v]) => ({
-        name: k === 'chr' ? '菊花识别' : k === 'corn' ? '玉米识别' : k === 'filament' ? '花丝识别' : k === 'leaf_sheath' ? '叶鞘识别' : k === 'ym' ? '玉米整体' : k,
+        name: k === 'chr' ? '菊花识别' : k === 'corn_filament' ? '花丝识别' : k === 'corn_filament_nature' ? '花丝原位识别' : k === 'corn_leaf_sheath' ? '叶鞘识别' : k === 'corn_shape' ? '玉米形状' : k === 'corn_all' ? '玉米整体': k,
         value: v
       }))
     }
@@ -410,16 +410,17 @@ onMounted(() => {
 // 饼图美化option
 const pieOption = computed(() => ({
   legend: {
-    orient: 'vertical',
-    left: 'left',
-    top: 'center',
+    orient: 'horizontal',
+    left: 'center',
+    bottom: 0,
     textStyle: { fontSize: 13 }
   },
   series: [
     {
       type: 'pie',
-      radius: ['50%', '70%'],
-      avoidLabelOverlap: false,
+      radius: ['45%', '65%'], // 稍微缩小
+      center: ['50%', '48%'], // 稍微上移
+      avoidLabelOverlap: true, // 开启标签避让
       label: {
         show: true,
         position: 'outside',
@@ -428,8 +429,8 @@ const pieOption = computed(() => ({
       },
       labelLine: {
         show: true,
-        length: 18,
-        length2: 10
+        length: 24, // 加长
+        length2: 16
       }
     }
   ]
@@ -547,7 +548,7 @@ const pieOption = computed(() => ({
   box-shadow: 0 2px 8px rgba(64,158,255,0.06);
   padding: 18px 10px 10px 10px;
   margin-bottom: 18px;
-  min-height: 280px;
+  min-height: 500px;
   display: flex;
   flex-direction: column;
   align-items: center;

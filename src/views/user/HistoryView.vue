@@ -721,7 +721,7 @@ const generatePieChartOptions = (probabilities) => {
       ]
     })
   })
-  
+
   pieChartOptions.value = options
 }
 
@@ -848,21 +848,21 @@ const copyDetailData = () => {
     text += `[玉米形状分析]\n识别时间: ${rec.time}\n\n形状类型: ${rec.rawData.shape_type}`
   } else if (rec.type === 'corn_all') {
     text += `[玉米整体分析]\n识别时间: ${rec.time}\n\n形状类型: ${rec.rawData.shape_type}\n测量点数量: ${rec.rawData.midline_widths?.length || 0} 个\n`
-    
+
     if (rec.rawData.process_single_image?.confidence) {
       text += `识别置信度: ${(rec.rawData.process_single_image.confidence * 100).toFixed(2)}%\n`
     }
-    
+
     text += `\n【比例】\n1/3: ${rec.rawData.ratios.ratio_1_3.toFixed(4)}\n1/5: ${rec.rawData.ratios.ratio_1_5.toFixed(4)}\n3/5: ${rec.rawData.ratios.ratio_3_5.toFixed(4)}\n\n【中线宽度】\n${rec.rawData.midline_widths.map((w,i)=>`位置${i+1}: ${w}`).join('\n')}`
-    
+
     if (rec.rawData.lab_max) {
       text += `\n\n【LAB最大值】\nL: ${rec.rawData.lab_max.L?.toFixed(2) ?? '--'}\nA: ${rec.rawData.lab_max.A?.toFixed(2) ?? '--'}\nB: ${rec.rawData.lab_max.B?.toFixed(2) ?? '--'}`
     }
-    
+
     if (rec.rawData.lab_mean) {
       text += `\n\n【LAB均值】\nL: ${rec.rawData.lab_mean.L?.toFixed(2) ?? '--'}\nA: ${rec.rawData.lab_mean.A?.toFixed(2) ?? '--'}\nB: ${rec.rawData.lab_mean.B?.toFixed(2) ?? '--'}`
     }
-    
+
     if (rec.rawData.zl_lengths && rec.rawData.zl_lengths.length > 0) {
       text += `\n\n【分段测量数据】\n${rec.rawData.zl_lengths.map((item, idx) => `段落${idx+1}: 像素高${item.pixel_height}, 像素宽${item.pixel_width}, 实际高${item.real_height_cm}cm, 实际宽${item.real_width_cm}cm`).join('\n')}`
     }
@@ -1186,7 +1186,7 @@ const copyDetailData = () => {
     margin-top: 10px;
     justify-content: flex-start;
   }
-  
+
   .detail-info {
     padding: 0;
     margin-top: 20px;
