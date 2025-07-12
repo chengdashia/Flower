@@ -1,8 +1,8 @@
 <template>
   <div class="corn-trait-container">
     <div class="page-header">
-      <h1 class="page-title">花丝原位识别</h1>
-      <p class="page-description">上传花丝图片，获取LAB颜色空间分析结果</p>
+      <h1 class="page-title">花丝识别</h1>
+      <p class="page-description">上传玉米花丝图片，获取LAB颜色空间分析结果</p>
     </div>
 
     <div class="content-wrapper">
@@ -27,7 +27,7 @@
             <div class="file-limit">jpg/png 文件大小小于 30M</div>
           </div>
           <div v-else class="image-preview">
-            <img :src="uploadedImage" alt="上传的图片" />
+            <img :src="uploadedImage" alt="上传的图片" style="cursor:pointer" @click.stop="openPreviewDialog(uploadedImage)" />
             <div class="image-actions">
               <el-button type="danger" size="small" icon="Delete" circle @click.stop="removeImage"></el-button>
             </div>
@@ -46,19 +46,8 @@
             <div>请上传图片进行识别</div>
           </div>
           <div v-else class="result-content">
-            <div class="result-images" v-if="resultImages">
-              <div class="result-image-item" v-if="resultImages.comparison">
-                <h4>对比图片</h4>
-                <img :src="getImageUrl(resultImages.comparison)" alt="对比图片" style="cursor:pointer;" @click="openPreview(getImageUrl(resultImages.comparison))" />
-              </div>
-              <div class="result-image-item" v-if="resultImages.red_region">
-                <h4>红色区域</h4>
-                <img :src="getImageUrl(resultImages.red_region)" alt="红色区域" style="cursor:pointer;" @click="openPreview(getImageUrl(resultImages.red_region))" />
-              </div>
-              <div class="result-image-item" v-if="resultImages.white_background">
-                <h4>白色背景</h4>
-                <img :src="getImageUrl(resultImages.white_background)" alt="白色背景" style="cursor:pointer;" @click="openPreview(getImageUrl(resultImages.white_background))" />
-              </div>
+            <div class="result-image" v-if="processedImage">
+              <img :src="getImageUrl(processedImage)" alt="处理后的图片" style="cursor:pointer" @click="openPreviewDialog(getImageUrl(processedImage))" />
             </div>
           </div>
         </div>
@@ -68,18 +57,18 @@
     <div v-if="analysisResult" class="lab-charts">
       <div class="chart-container">
         <div class="chart-header">
-          <h3><el-icon><Histogram /></el-icon> 原始图片 LAB 均值</h3>
+          <h3><el-icon><Histogram /></el-icon> LAB 颜色均值</h3>
           <el-button 
             type="primary" 
             size="small" 
-            @click="copyLabValues(originalLab, '原始图片LAB均值')"
+            @click="copyLabValues(meanLab, 'LAB颜色均值')"
             :icon="CopyDocument"
           >
             复制数据
           </el-button>
         </div>
         <el-row :gutter="20">
-          <el-col :xs="24" :sm="24" :md="8" v-for="(value, key) in originalLab" :key="'original-'+key">
+          <el-col :xs="24" :sm="24" :md="8" v-for="(value, key) in meanLab" :key="key">
             <el-card class="lab-card" :body-style="{ padding: '15px' }">
               <div class="lab-value">
                 <span class="lab-label">{{ key }}:</span>
@@ -96,18 +85,18 @@
       
       <div class="chart-container">
         <div class="chart-header">
-          <h3><el-icon><TopRight /></el-icon> 提取的红色区域 LAB 均值</h3>
+          <h3><el-icon><TopRight /></el-icon> a* 最大值对应的 LAB 值</h3>
           <el-button 
             type="primary" 
             size="small" 
-            @click="copyLabValues(redRegionLab, '提取的红色区域LAB均值')"
+            @click="copyLabValues(maxALab, 'a*最大值对应的LAB值')"
             :icon="CopyDocument"
           >
             复制数据
           </el-button>
         </div>
         <el-row :gutter="20">
-          <el-col :xs="24" :sm="24" :md="8" v-for="(value, key) in redRegionLab" :key="'red-'+key">
+          <el-col :xs="24" :sm="24" :md="8" v-for="(value, key) in maxALab" :key="key">
             <el-card class="lab-card" :body-style="{ padding: '15px' }">
               <div class="lab-value">
                 <span class="lab-label">{{ key }}:</span>
@@ -136,7 +125,7 @@
       </el-button>
     </div>
 
-    <ImagePreviewDialog :visible="previewDialogVisible" :imageUrl="previewImageUrl" @update:visible="val => previewDialogVisible = val" />
+    <ImagePreviewDialog :visible="previewDialogVisible" :imageUrl="previewDialogImageUrl" @update:visible="val => previewDialogVisible = val" />
   </div>
 </template>
 
@@ -144,8 +133,8 @@
 import { ref, reactive, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElLoading } from 'element-plus'
-import { Upload, InfoFilled, Delete, DataAnalysis, Histogram, TopRight, Search, CopyDocument } from '@element-plus/icons-vue'
-import { filamentIdentifyFile } from '@/api/flower'
+import { Upload, InfoFilled, Delete, DataAnalysis, Histogram, TopRight, Back, Search, CopyDocument } from '@element-plus/icons-vue'
+import { cornFilament } from '@/api/corn'
 import ImagePreviewDialog from '@/components/common/ImagePreviewDialog.vue'
 
 const router = useRouter()
@@ -153,13 +142,13 @@ const fileInput = ref(null)
 const uploadedImage = ref(null)
 const uploadedFile = ref(null) // 存储实际的文件对象
 const analysisResult = ref(null)
-const resultImages = ref(null)
-const originalLab = ref(null)
-const redRegionLab = ref(null)
+const processedImage = ref(null)
+const meanLab = ref(null)
+const maxALab = ref(null)
 const isDragging = ref(false)
 const isLoading = ref(false)
 const previewDialogVisible = ref(false)
-const previewImageUrl = ref('')
+const previewDialogImageUrl = ref('')
 
 // 获取图片完整URL
 const getImageUrl = (imagePath) => {
@@ -212,9 +201,9 @@ const removeImage = (event) => {
 
 const resetResults = () => {
   analysisResult.value = null
-  resultImages.value = null
-  originalLab.value = null
-  redRegionLab.value = null
+  processedImage.value = null
+  meanLab.value = null
+  maxALab.value = null
 }
 
 const processFile = (file) => {
@@ -293,18 +282,18 @@ const submitImage = async () => {
   })
 
   try {
-    const response = await filamentIdentifyFile(uploadedFile.value)
+    // 调用后端API，直接发送文件对象
+    const response = await cornFilament(uploadedFile.value)
     
+    // 处理返回的数据
     if (response.code === 200) {
       analysisResult.value = response.data
       
       // 处理返回的图片路径
-      resultImages.value = response.data.images
+      processedImage.value = response.data.processed_image
       
-      // 处理 LAB 值
-      originalLab.value = response.data.lab_values.original
-      redRegionLab.value = response.data.lab_values.red_region
-      
+      meanLab.value = response.data.mean_lab
+      maxALab.value = response.data.max_a_lab
       ElMessage.success('识别完成')
     } else {
       ElMessage.error(response.message || '识别失败')
@@ -354,8 +343,8 @@ const copyLabValues = (labValues, title) => {
   }
 }
 
-const openPreview = (imgUrl) => {
-  previewImageUrl.value = imgUrl
+const openPreviewDialog = (imgUrl) => {
+  previewDialogImageUrl.value = imgUrl
   previewDialogVisible.value = true
 }
 
@@ -406,19 +395,15 @@ onUnmounted(() => {
   margin-bottom: 25px;
 }
 
-.upload-section {
-  flex: 0.4;  /* 上传区域占40% */
-  display: flex;
-  flex-direction: column;
-  background-color: #ffffff;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-  transition: all 0.3s ease;
+@media (max-width: 768px) {
+  .content-wrapper {
+    flex-direction: column;
+    gap: 20px;
+  }
 }
 
-.result-section {
-  flex: 0.6;  /* 结果区域占60% */
+.upload-section, .result-section {
+  flex: 1;
   display: flex;
   flex-direction: column;
   background-color: #ffffff;
@@ -464,10 +449,6 @@ onUnmounted(() => {
   position: relative;
   transition: all 0.3s ease;
   background-color: rgba(236, 245, 255, 0.3);
-}
-
-.result-area {
-  cursor: default;  /* 结果区域不需要鼠标手型 */
 }
 
 .upload-area.drag-over {
@@ -531,7 +512,7 @@ onUnmounted(() => {
   border-radius: 4px;
 }
 
-.image-preview {
+.image-preview, .result-image {
   width: 100%;
   height: 100%;
   display: flex;
@@ -540,7 +521,7 @@ onUnmounted(() => {
   position: relative;
 }
 
-.image-preview img {
+.image-preview img, .result-image img {
   max-width: 100%;
   max-height: 100%;
   object-fit: contain;
@@ -549,7 +530,7 @@ onUnmounted(() => {
   transition: all 0.3s;
 }
 
-.image-preview:hover img {
+.image-preview:hover img, .result-image:hover img {
   transform: scale(1.02);
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
 }
@@ -575,42 +556,6 @@ onUnmounted(() => {
   flex-direction: column;
   gap: 15px;
   padding: 10px;
-  overflow-y: auto;
-}
-
-.result-images {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  width: 100%;
-}
-
-.result-image-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-}
-
-.result-image-item h4 {
-  margin: 0;
-  color: #303133;
-  font-size: 16px;
-  font-weight: 600;
-}
-
-.result-image-item img {
-  max-width: 100%;
-  max-height: 200px;
-  object-fit: contain;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  transition: all 0.3s;
-}
-
-.result-image-item img:hover {
-  transform: scale(1.05);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
 }
 
 .lab-charts {
@@ -631,21 +576,26 @@ onUnmounted(() => {
   transform: translateY(-2px);
 }
 
-.chart-container h3 {
-  margin-top: 0;
+.chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #ebeef5;
+}
+
+.chart-header h3 {
+  margin: 0;
   font-size: 18px;
   color: #303133;
   display: flex;
   align-items: center;
   gap: 8px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid #ebeef5;
 }
 
-.chart-container h3 .el-icon {
-  color: #409eff;
-  font-size: 20px;
+.chart-container h3 {
+  display: none; /* 隐藏原来的标题样式 */
 }
 
 .lab-card {
@@ -767,38 +717,5 @@ onUnmounted(() => {
 
 .button-icon {
   font-size: 20px;
-}
-
-.chart-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid #ebeef5;
-}
-
-.chart-header h3 {
-  margin: 0;
-  font-size: 18px;
-  color: #303133;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.chart-container h3 {
-  display: none; /* 隐藏原来的标题样式 */
-}
-
-@media (max-width: 768px) {
-  .content-wrapper {
-    flex-direction: column;
-    gap: 20px;
-  }
-  
-  .upload-section, .result-section {
-    flex: 1;  /* 在移动端恢复为等比例 */
-  }
 }
 </style>

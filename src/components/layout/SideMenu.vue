@@ -104,16 +104,16 @@ const menuItems = [
         title: '菊花识别',
         icon: 'Aim',
         children: [
-          { index: '/juhua-trait', title: '菊花形状识别' },
-          { index: '/juhua-stats', title: '菊花形状统计' }
+          { index: '/juhua-trait', title: '形状识别' },
+          { index: '/juhua-stats', title: '形状统计' }
         ]
       },
       { 
         title: '玉米识别',
         icon: 'Aim',
         children: [
-          { index: '/corn-trait', title: '玉米性状识别' },
-          { index: '/filament-trait', title: '花丝原位识别' },
+          { index: '/corn-filament', title: '花丝识别' },
+          { index: '/corn-filament-nature', title: '花丝原位识别' },
           { index: '/leaf-sheath-trait', title: '叶鞘识别' },
         ]
       },
@@ -135,8 +135,8 @@ const menuItems = [
         title: '玉米分析',
         icon: 'DataLine',
         children: [
-          { index: '/corn-shape-analysis', title: '玉米形状分析' },
-          { index: '/corn-overall-analysis', title: '玉米整体分析' },
+          { index: '/corn-shape-analysis', title: '形状分析' },
+          { index: '/corn-overall-analysis', title: '整体分析' },
         ]
       },
 

@@ -145,7 +145,7 @@ import { ref, reactive, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElLoading } from 'element-plus'
 import { Upload, InfoFilled, Delete, DataAnalysis, Histogram, TopRight, Search, CopyDocument } from '@element-plus/icons-vue'
-import { leafSheathIdentifyFile } from '@/api/flower'
+import { cornLeafSheath } from '@/api/corn'
 import ImagePreviewDialog from '@/components/common/ImagePreviewDialog.vue'
 
 const router = useRouter()
@@ -293,7 +293,7 @@ const submitImage = async () => {
   })
 
   try {
-    const response = await leafSheathIdentifyFile(uploadedFile.value)
+    const response = await cornLeafSheath(uploadedFile.value)
     
     if (response.code === 200) {
       analysisResult.value = response.data

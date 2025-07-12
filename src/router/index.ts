@@ -21,14 +21,14 @@ const router = createRouter({
           component: () => import('../views/juhua/JuhuaStats.vue')
         },
         {
-          path: '/corn-trait',
-          name: 'cornTrait',
-          component: () => import('../views/corn/CornTraitFile.vue')
+          path: '/corn-filament',
+          name: 'cornFilament',
+          component: () => import('../views/corn/CornFilament.vue')
         },
         {
-          path: '/filament-trait',
-          name: 'filamentTrait',
-          component: () => import('../views/corn/FilamentTraitFile.vue')
+          path: '/corn-filament-nature',
+          name: 'cornFilamentNature',
+          component: () => import('../views/corn/CornFilamentNature.vue')
         },
         {
           path: '/leaf-sheath-trait',

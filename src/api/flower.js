@@ -46,18 +46,7 @@ export const cornIdentify = (data) => {
   })
 }
 
-export const cornIdentifyFile = (file) => {
-  const formData = new FormData()
-  formData.append('image', file)
 
-  return request.post({
-    url: '/corn_identify_file/analyze',
-    data: formData,
-    headers: {
-      'Content-Type': 'multipart/form-data',
-    },
-  })
-}
 
 export const filamentIdentify = (data) => {
   return request.post({
@@ -66,18 +55,7 @@ export const filamentIdentify = (data) => {
   })
 }
 
-export const filamentIdentifyFile = (file) => {
-  const formData = new FormData()
-  formData.append('image', file)
-  
-  return request.post({
-    url: '/filament_identify_file/analyze',
-    data: formData,
-    headers: {
-      'Content-Type': 'multipart/form-data',
-    },
-  })
-}
+
 
 export const leafSheathIdentify = (data) => {
   return request.post({
@@ -86,18 +64,7 @@ export const leafSheathIdentify = (data) => {
   })
 }
 
-export const leafSheathIdentifyFile = (file) => {
-  const formData = new FormData()
-  formData.append('image', file)
 
-  return request.post({
-    url: '/leaf_sheath_identify_file/analyze',
-    data: formData,
-    headers: {
-      'Content-Type': 'multipart/form-data',
-    },
-  })
-}
 
 export const flowerUpload = (data) => {
   return request.post({
