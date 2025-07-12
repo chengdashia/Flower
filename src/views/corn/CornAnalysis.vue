@@ -236,7 +236,7 @@ import { ref, reactive, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElLoading, ElDialog } from 'element-plus'
 import { Upload, InfoFilled, Delete, DataAnalysis, Search, PieChart, TrendCharts, CopyDocument, Histogram, RefreshRight, ZoomIn } from '@element-plus/icons-vue'
-import {ymAnalyzer} from '@/api/flower'
+import {cornAnalyzer} from '@/api/corn'
 
 const router = useRouter()
 const fileInput = ref(null)
@@ -379,7 +379,7 @@ const submitImage = async () => {
   })
 
   try {
-    const response = await ymAnalyzer({
+    const response = await cornAnalyzer({
       image: uploadedImage.value
     })
 
