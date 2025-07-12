@@ -7,11 +7,12 @@
       <el-row :gutter="20">
         <el-col :span="6">
           <el-select v-model="filterType" placeholder="识别类型" clearable>
-            <el-option label="菊花识别" value="chr" />
-            <el-option label="玉米花丝识别" value="filament" />
-            <el-option label="玉米籽粒识别" value="corn" />
-            <el-option label="玉米叶鞘识别" value="leaf_sheath" />
-            <el-option label="玉米识别" value="ym" />
+            <el-option label="菊花" value="chr" />
+            <el-option label="玉米花丝" value="corn_filament_nature" />
+            <el-option label="玉米花丝原位" value="corn_filament" />
+            <el-option label="玉米叶鞘" value="corn_leaf_sheath" />
+            <el-option label="玉米形状" value="corn_shape" />
+            <el-option label="玉米整体" value="corn_all" />
           </el-select>
         </el-col>
         <el-col :span="6">
@@ -69,7 +70,7 @@
                 </div>
               </div>
               <!-- 花丝/叶鞘类型 -->
-              <div v-else-if="record.type === 'filament' || record.type === 'leaf_sheath'" class="result-items result-items-group">
+              <div v-else-if="['corn_filament_nature', 'corn_filament', 'corn_leaf_sheath'].includes(record.type)" class="result-items result-items-group">
                 <div class="result-lab-row">
                   <span class="trait-badge">原始LAB</span>
                   <span class="trait-lab">L: <b>{{ record.rawData.original_lab.L }}</b></span>
@@ -83,26 +84,26 @@
                   <span class="trait-lab">B: <b>{{ record.rawData.red_region_lab.B }}</b></span>
                 </div>
               </div>
-              <!-- 玉米籽粒类型 -->
-              <div v-else-if="record.type === 'corn'" class="result-items result-items-group">
-                <div class="result-lab-row">
-                  <span class="trait-badge">平均LAB</span>
-                  <span class="trait-lab">L: <b>{{ record.rawData.mean_lab.L }}</b></span>
-                  <span class="trait-lab">A: <b>{{ record.rawData.mean_lab.A }}</b></span>
-                  <span class="trait-lab">B: <b>{{ record.rawData.mean_lab.B }}</b></span>
-                </div>
-                <div class="result-lab-row">
-                  <span class="trait-badge trait-badge-maxa">最大A值LAB</span>
-                  <span class="trait-lab">L: <b>{{ record.rawData.max_a_lab.L }}</b></span>
-                  <span class="trait-lab">A: <b>{{ record.rawData.max_a_lab.A }}</b></span>
-                  <span class="trait-lab">B: <b>{{ record.rawData.max_a_lab.B }}</b></span>
-                </div>
-              </div>
-              <!-- 玉米整体类型 -->
-              <div v-else-if="record.type === 'ym'" class="result-items result-items-group">
+              <!-- 玉米形状类型 -->
+              <div v-else-if="record.type === 'corn_shape'" class="result-items result-items-group">
                 <div class="result-shape-row">
                   <span class="trait-badge trait-badge-shape">形状类型</span>
                   <span class="trait-shape">{{ record.rawData.shape_type }}</span>
+                </div>
+              </div>
+              <!-- 玉米整体类型 -->
+              <div v-else-if="record.type === 'corn_all'" class="result-items result-items-group">
+                <div class="result-shape-row">
+                  <span class="trait-badge trait-badge-shape">形状类型</span>
+                  <span class="trait-shape">{{ record.rawData.shape_type }}</span>
+                </div>
+                <div class="result-shape-row">
+                  <span class="trait-badge trait-badge-confidence">置信度</span>
+                  <span class="trait-confidence">{{ ((record.rawData.process_single_image?.confidence || 0) * 100).toFixed(2) }}%</span>
+                </div>
+                <div class="result-shape-row">
+                  <span class="trait-badge trait-badge-width">测量点</span>
+                  <span class="trait-width">{{ record.rawData.midline_widths?.length || 0 }} 个</span>
                 </div>
               </div>
               
@@ -148,7 +149,7 @@
             </div>
             
             <!-- Additional images for specific types -->
-            <div v-if="['filament', 'leaf_sheath'].includes(selectedRecord.type)" class="additional-images">
+            <div v-if="['corn_filament_nature', 'corn_filament', 'corn_leaf_sheath'].includes(selectedRecord.type)" class="additional-images">
               <h4>处理过程图片</h4>
               <el-row :gutter="10">
                 <el-col :span="8">
@@ -165,11 +166,7 @@
                 </el-col>
               </el-row>
             </div>
-            <div v-if="selectedRecord.type === 'corn'" class="additional-images">
-              <h4>处理后图片</h4>
-              <img :src="imageBaseUrl + selectedRecord.rawData.processed_image_path" class="additional-image" style="cursor:pointer;" @click="openPreview(imageBaseUrl + selectedRecord.rawData.processed_image_path)" />
-            </div>
-            <div v-if="selectedRecord.type === 'ym'" class="additional-images">
+            <div v-if="['corn_shape', 'corn_all'].includes(selectedRecord.type)" class="additional-images">
               <h4>分析图片</h4>
               <el-row :gutter="10">
                 <el-col :span="8">
@@ -221,7 +218,7 @@
               </div>
 
               <!-- Filament/Leaf Sheath details -->
-              <div v-if="['filament', 'leaf_sheath'].includes(selectedRecord.type)" class="detail-results card-group">
+              <div v-if="['corn_filament_nature', 'corn_filament', 'corn_leaf_sheath'].includes(selectedRecord.type)" class="detail-results card-group">
                 <el-row :gutter="20">
                   <el-col :span="12">
                     <el-card class="result-card" :body-style="{padding: '18px 20px 12px 20px'}">
@@ -252,68 +249,189 @@
                 </el-row>
               </div>
 
-              <!-- Corn details -->
-              <div v-if="selectedRecord.type === 'corn'" class="detail-results card-group vertical-group">
-                <el-card class="result-card" :body-style="{padding: '18px 20px 12px 20px'}">
-                  <div class="result-title">
-                    <span class="trait-badge">平均 LAB</span>
-                  </div>
-                  <div v-for="(value, key) in selectedRecord.rawData.mean_lab" :key="'mean-'+key" class="lab-bar-row">
-                    <span class="lab-label">{{ key }}:</span>
-                    <span class="lab-number">{{ value.toFixed(2) }}</span>
-                    <el-progress :percentage="getLabBarPercent(key, value)" :color="getLabBarColor(key)" :show-text="false" style="width:60%;margin-left:10px;"/>
-                    <span class="lab-desc">{{ getLabChannelDesc(key) }}</span>
-                  </div>
-                </el-card>
-                <el-card class="result-card" :body-style="{padding: '18px 20px 12px 20px'}">
-                  <div class="result-title">
-                    <span class="trait-badge trait-badge-maxa">最大A值 LAB</span>
-                  </div>
-                  <div v-for="(value, key) in selectedRecord.rawData.max_a_lab" :key="'maxa-'+key" class="lab-bar-row">
-                    <span class="lab-label">{{ key }}:</span>
-                    <span class="lab-number">{{ value.toFixed(2) }}</span>
-                    <el-progress :percentage="getLabBarPercent(key, value)" :color="getLabBarColor(key)" :show-text="false" style="width:60%;margin-left:10px;"/>
-                    <span class="lab-desc">{{ getLabChannelDesc(key) }}</span>
-                  </div>
-                </el-card>
-              </div>
-
-              <!-- YM details -->
-              <div v-if="selectedRecord.type === 'ym'" class="detail-results card-group vertical-group">
+              <!-- Corn Shape details -->
+              <div v-if="selectedRecord.type === 'corn_shape'" class="detail-results card-group vertical-group">
                 <el-card class="result-card" :body-style="{padding: '18px 20px 12px 20px'}">
                   <div class="result-title">
                     <span class="trait-badge">形状类型</span>
                   </div>
                   <div class="shape-type-label">{{ selectedRecord.rawData.shape_type }}</div>
                 </el-card>
+              </div>
+
+              <!-- Corn All details -->
+              <div v-if="selectedRecord.type === 'corn_all'" class="detail-results card-group vertical-group">
+                <!-- 基础信息 -->
                 <el-card class="result-card" :body-style="{padding: '18px 20px 12px 20px'}">
                   <div class="result-title">
-                    <span class="trait-badge">比例</span>
+                    <span class="trait-badge">基础信息</span>
                   </div>
-                  <div class="ratio-bar-row">
-                    <span class="ratio-label">1:3 比例</span>
-                    <el-progress :percentage="getRatioPercent(selectedRecord.rawData.ratios.ratio_1_3)" :color="'#e6a23c'" :show-text="false" style="width:60%;margin-left:10px;"/>
-                    <span class="ratio-value">{{ selectedRecord.rawData.ratios.ratio_1_3.toFixed(4) }}</span>
-                  </div>
-                  <div class="ratio-bar-row">
-                    <span class="ratio-label">1:5 比例</span>
-                    <el-progress :percentage="getRatioPercent(selectedRecord.rawData.ratios.ratio_1_5)" :color="'#f56c6c'" :show-text="false" style="width:60%;margin-left:10px;"/>
-                    <span class="ratio-value">{{ selectedRecord.rawData.ratios.ratio_1_5.toFixed(4) }}</span>
-                  </div>
-                  <div class="ratio-bar-row">
-                    <span class="ratio-label">3:5 比例</span>
-                    <el-progress :percentage="getRatioPercent(selectedRecord.rawData.ratios.ratio_3_5)" :color="'#67c23a'" :show-text="false" style="width:60%;margin-left:10px;"/>
-                    <span class="ratio-value">{{ selectedRecord.rawData.ratios.ratio_3_5.toFixed(4) }}</span>
+                  <div class="info-grid">
+                    <div class="info-item">
+                      <span class="info-label">形状类型:</span>
+                      <span class="info-value shape-type">{{ selectedRecord.rawData.shape_type }}</span>
+                    </div>
+                    <div class="info-item">
+                      <span class="info-label">测量点数量:</span>
+                      <span class="info-value">{{ selectedRecord.rawData.midline_widths?.length || 0 }} 个</span>
+                    </div>
+                    <div class="info-item" v-if="selectedRecord.rawData.process_single_image?.confidence">
+                      <span class="info-label">识别置信度:</span>
+                      <span class="info-value confidence">{{ (selectedRecord.rawData.process_single_image.confidence * 100).toFixed(2) }}%</span>
+                    </div>
                   </div>
                 </el-card>
+
+                <!-- 中线宽度分析 -->
                 <el-card class="result-card" :body-style="{padding: '18px 20px 12px 20px'}">
                   <div class="result-title">
-                    <span class="trait-badge">中线宽度</span>
+                    <span class="trait-badge">中线宽度分析</span>
                   </div>
-                  <div class="width-bar-row" v-for="(width, idx) in selectedRecord.rawData.midline_widths" :key="'width-'+idx">
-                    <span class="width-label">位置{{ idx+1 }}</span>
-                    <el-progress :percentage="getWidthPercent(width, selectedRecord.rawData.midline_widths)" :color="'#409EFF'" :show-text="false" style="width:60%;margin-left:10px;"/>
-                    <span class="width-value">{{ width }}</span>
+                  <div class="width-summary">
+                    <div class="summary-item">
+                      <div class="summary-label">最大宽度</div>
+                      <div class="summary-value">{{ Math.max(...selectedRecord.rawData.midline_widths) }} px</div>
+                    </div>
+                    <div class="summary-item">
+                      <div class="summary-label">平均宽度</div>
+                      <div class="summary-value">{{ Math.round(selectedRecord.rawData.midline_widths.reduce((a, b) => a + b, 0) / selectedRecord.rawData.midline_widths.length) }} px</div>
+                    </div>
+                    <div class="summary-item">
+                      <div class="summary-label">最小宽度</div>
+                      <div class="summary-value">{{ Math.min(...selectedRecord.rawData.midline_widths) }} px</div>
+                    </div>
+                  </div>
+                  <div class="width-chart">
+                    <div 
+                      v-for="(width, index) in selectedRecord.rawData.midline_widths.slice(0, 8)" 
+                      :key="index"
+                      class="width-bar"
+                    >
+                      <div class="bar-label">P{{ index + 1 }}</div>
+                      <div class="bar-container">
+                        <div 
+                          class="bar-fill" 
+                          :style="{ width: getWidthPercentage(width) + '%' }"
+                        ></div>
+                      </div>
+                      <span class="bar-value">{{ width }}</span>
+                    </div>
+                  </div>
+                </el-card>
+
+                <!-- 比例数据 -->
+                <el-card class="result-card" :body-style="{padding: '18px 20px 12px 20px'}">
+                  <div class="result-title">
+                    <span class="trait-badge">比例数据</span>
+                  </div>
+                  <div class="ratio-chart">
+                    <div class="ratio-item">
+                      <div class="ratio-label">1:3 比例</div>
+                      <div class="ratio-progress">
+                        <div class="progress-bar">
+                          <div 
+                            class="progress-fill" 
+                            :style="{ width: getRatioPercentage(selectedRecord.rawData.ratios.ratio_1_3) + '%' }"
+                          ></div>
+                        </div>
+                        <span class="ratio-value">{{ selectedRecord.rawData.ratios.ratio_1_3.toFixed(4) }}</span>
+                      </div>
+                    </div>
+                    <div class="ratio-item">
+                      <div class="ratio-label">1:5 比例</div>
+                      <div class="ratio-progress">
+                        <div class="progress-bar">
+                          <div 
+                            class="progress-fill" 
+                            :style="{ width: getRatioPercentage(selectedRecord.rawData.ratios.ratio_1_5) + '%' }"
+                          ></div>
+                        </div>
+                        <span class="ratio-value">{{ selectedRecord.rawData.ratios.ratio_1_5.toFixed(4) }}</span>
+                      </div>
+                    </div>
+                    <div class="ratio-item">
+                      <div class="ratio-label">3:5 比例</div>
+                      <div class="ratio-progress">
+                        <div class="progress-bar">
+                          <div 
+                            class="progress-fill" 
+                            :style="{ width: getRatioPercentage(selectedRecord.rawData.ratios.ratio_3_5) + '%' }"
+                          ></div>
+                        </div>
+                        <span class="ratio-value">{{ selectedRecord.rawData.ratios.ratio_3_5.toFixed(4) }}</span>
+                      </div>
+                    </div>
+                  </div>
+                </el-card>
+
+                <!-- LAB色彩分析 -->
+                <el-card class="result-card" :body-style="{padding: '18px 20px 12px 20px'}" v-if="selectedRecord.rawData.lab_max || selectedRecord.rawData.lab_mean">
+                  <div class="result-title">
+                    <span class="trait-badge">LAB色彩分析</span>
+                  </div>
+                  <el-row :gutter="20">
+                    <!-- LAB最大值 -->
+                    <el-col :span="12" v-if="selectedRecord.rawData.lab_max">
+                      <div class="lab-section">
+                        <h4>LAB 最大值</h4>
+                        <div v-for="key in ['L','A','B']" :key="'labmax-'+key" class="lab-bar-row">
+                          <span class="lab-label">{{ key }}:</span>
+                          <span class="lab-number">{{ selectedRecord.rawData.lab_max[key]?.toFixed(2) ?? '--' }}</span>
+                          <el-progress :percentage="getLabBarPercent(key, selectedRecord.rawData.lab_max[key])" :color="getLabBarColor(key)" :show-text="false" style="width:60%;margin-left:10px;"/>
+                          <span class="lab-desc">{{ getLabChannelDesc(key) }}</span>
+                        </div>
+                      </div>
+                    </el-col>
+                    <!-- LAB均值 -->
+                    <el-col :span="12" v-if="selectedRecord.rawData.lab_mean">
+                      <div class="lab-section">
+                        <h4>LAB 均值</h4>
+                        <div v-for="key in ['L','A','B']" :key="'labmean-'+key" class="lab-bar-row">
+                          <span class="lab-label">{{ key }}:</span>
+                          <span class="lab-number">{{ selectedRecord.rawData.lab_mean[key]?.toFixed(2) ?? '--' }}</span>
+                          <el-progress :percentage="getLabBarPercent(key, selectedRecord.rawData.lab_mean[key])" :color="getLabBarColor(key)" :show-text="false" style="width:60%;margin-left:10px;"/>
+                          <span class="lab-desc">{{ getLabChannelDesc(key) }}</span>
+                        </div>
+                      </div>
+                    </el-col>
+                  </el-row>
+                </el-card>
+
+                <!-- 分段测量数据 -->
+                <el-card class="result-card" :body-style="{padding: '18px 20px 12px 20px'}" v-if="selectedRecord.rawData.zl_lengths && selectedRecord.rawData.zl_lengths.length > 0">
+                  <div class="result-title">
+                    <span class="trait-badge">分段测量数据</span>
+                  </div>
+                  <div class="table-container">
+                    <el-table 
+                      :data="selectedRecord.rawData.zl_lengths" 
+                      border 
+                      style="width: 100%;" 
+                      class="measurement-table"
+                      :show-header="true"
+                      header-align="center"
+                    >
+                      <el-table-column prop="pixel_height" label="像素高度" width="120" align="center" header-align="center">
+                        <template #default="scope">
+                          <span class="table-value">{{ scope.row.pixel_height }} px</span>
+                        </template>
+                      </el-table-column>
+                      <el-table-column prop="pixel_width" label="像素宽度" width="120" align="center" header-align="center">
+                        <template #default="scope">
+                          <span class="table-value">{{ scope.row.pixel_width }} px</span>
+                        </template>
+                      </el-table-column>
+                      <el-table-column prop="real_height_cm" label="实际高度(cm)" width="140" align="center" header-align="center">
+                        <template #default="scope">
+                          <span class="table-value">{{ scope.row.real_height_cm }} cm</span>
+                        </template>
+                      </el-table-column>
+                      <el-table-column prop="real_width_cm" label="实际宽度(cm)" width="140" align="center" header-align="center">
+                        <template #default="scope">
+                          <span class="table-value">{{ scope.row.real_width_cm }} cm</span>
+                        </template>
+                      </el-table-column>
+                    </el-table>
                   </div>
                 </el-card>
               </div>
@@ -389,11 +507,12 @@ const selectedRecord = ref(null)
 const recordToDelete = ref({ id: null, type: null })
 
 const typeLabels = {
-  chr: '菊花识别',
-  filament: '玉米花丝识别',
-  corn: '玉米籽粒识别',
-  leaf_sheath: '玉米叶鞘识别',
-  ym: '玉米识别',
+  chr: '菊花',
+  corn_filament_nature: '玉米花丝',
+  corn_filament: '玉米花丝原位',
+  corn_leaf_sheath: '玉米叶鞘',
+  corn_shape: '玉米形状',
+  corn_all: '玉米整体',
 }
 
 // 饼图配置
@@ -462,25 +581,27 @@ const fetchHistoryRecords = async () => {
               '花型分类': { trait: { [`类型${item.prediction2}`]: item.probability2, '其他类型': 1 - item.probability2 } }
             }
             break
-          case 'filament':
-          case 'leaf_sheath':
+          case 'corn_filament_nature':
+          case 'corn_filament':
+          case 'corn_leaf_sheath':
             record.imageUrl = `${imageBaseUrl}${item.upload_path}`
             record.results = [
               { trait: '原始LAB', value: `L:${item.original_lab.L}, A:${item.original_lab.A}, B:${item.original_lab.B}` },
               { trait: '红色区域LAB', value: `L:${item.red_region_lab.L}, A:${item.red_region_lab.A}, B:${item.red_region_lab.B}` }
             ]
             break
-          case 'corn':
-            record.imageUrl = `${imageBaseUrl}${item.upload_path}`
-            record.results = [
-              { trait: '平均LAB', value: `L:${item.mean_lab.L}, A:${item.mean_lab.A}, B:${item.mean_lab.B}` },
-              { trait: '最大A值LAB', value: `L:${item.max_a_lab.L}, A:${item.max_a_lab.A}, B:${item.max_a_lab.B}` }
-            ]
-            break
-          case 'ym':
+          case 'corn_shape':
             record.imageUrl = `${imageBaseUrl}${item.upload_path}`
             record.results = [
               { trait: '形状类型', value: item.shape_type }
+            ]
+            break
+          case 'corn_all':
+            record.imageUrl = `${imageBaseUrl}${item.upload_path}`
+            record.results = [
+              { trait: '形状类型', value: item.shape_type },
+              { trait: '测量点数量', value: `${item.midline_widths?.length || 0} 个` },
+              { trait: '置信度', value: `${((item.process_single_image?.confidence || 0) * 100).toFixed(2)}%` }
             ]
             break
         }
@@ -693,6 +814,21 @@ const getWidthPercent = (width, arr) => {
   return max > 0 ? (width / max) * 100 : 0
 }
 
+// 获取宽度百分比 (用于corn_all)
+const getWidthPercentage = (width) => {
+  if (!selectedRecord.value?.rawData?.midline_widths) return 0
+  const maxWidth = Math.max(...selectedRecord.value.rawData.midline_widths)
+  return maxWidth > 0 ? (width / maxWidth) * 100 : 0
+}
+
+// 获取比例百分比 (用于corn_all)
+const getRatioPercentage = (ratio) => {
+  if (!selectedRecord.value?.rawData?.ratios) return 0
+  const ratios = selectedRecord.value.rawData.ratios
+  const maxRatio = Math.max(ratios.ratio_1_3, ratios.ratio_1_5, ratios.ratio_3_5)
+  return maxRatio > 0 ? (ratio / maxRatio) * 100 : 0
+}
+
 // 图片预览弹窗
 const previewDialogVisible = ref(false)
 const previewImageUrl = ref('')
@@ -706,12 +842,30 @@ const copyDetailData = () => {
   if (!selectedRecord.value) return
   let text = ''
   const rec = selectedRecord.value
-  if (rec.type === 'filament' || rec.type === 'leaf_sheath') {
+  if (['corn_filament_nature', 'corn_filament', 'corn_leaf_sheath'].includes(rec.type)) {
     text += `[${rec.typeLabel}]\n识别时间: ${rec.time}\n\n【原始LAB】\nL: ${rec.rawData.original_lab.L}\nA: ${rec.rawData.original_lab.A}\nB: ${rec.rawData.original_lab.B}\n\n【红色区域LAB】\nL: ${rec.rawData.red_region_lab.L}\nA: ${rec.rawData.red_region_lab.A}\nB: ${rec.rawData.red_region_lab.B}`
-  } else if (rec.type === 'corn') {
-    text += `[玉米籽粒识别]\n识别时间: ${rec.time}\n\n【平均LAB】\nL: ${rec.rawData.mean_lab.L}\nA: ${rec.rawData.mean_lab.A}\nB: ${rec.rawData.mean_lab.B}\n\n【最大A值LAB】\nL: ${rec.rawData.max_a_lab.L}\nA: ${rec.rawData.max_a_lab.A}\nB: ${rec.rawData.max_a_lab.B}`
-  } else if (rec.type === 'ym') {
-    text += `[玉米整体分析]\n识别时间: ${rec.time}\n\n形状类型: ${rec.rawData.shape_type}\n\n【比例】\n1/3: ${rec.rawData.ratios.ratio_1_3}\n1/5: ${rec.rawData.ratios.ratio_1_5}\n3/5: ${rec.rawData.ratios.ratio_3_5}\n\n【中线宽度】\n${rec.rawData.midline_widths.map((w,i)=>`位置${i+1}: ${w}`).join('\n')}`
+  } else if (rec.type === 'corn_shape') {
+    text += `[玉米形状分析]\n识别时间: ${rec.time}\n\n形状类型: ${rec.rawData.shape_type}`
+  } else if (rec.type === 'corn_all') {
+    text += `[玉米整体分析]\n识别时间: ${rec.time}\n\n形状类型: ${rec.rawData.shape_type}\n测量点数量: ${rec.rawData.midline_widths?.length || 0} 个\n`
+    
+    if (rec.rawData.process_single_image?.confidence) {
+      text += `识别置信度: ${(rec.rawData.process_single_image.confidence * 100).toFixed(2)}%\n`
+    }
+    
+    text += `\n【比例】\n1/3: ${rec.rawData.ratios.ratio_1_3.toFixed(4)}\n1/5: ${rec.rawData.ratios.ratio_1_5.toFixed(4)}\n3/5: ${rec.rawData.ratios.ratio_3_5.toFixed(4)}\n\n【中线宽度】\n${rec.rawData.midline_widths.map((w,i)=>`位置${i+1}: ${w}`).join('\n')}`
+    
+    if (rec.rawData.lab_max) {
+      text += `\n\n【LAB最大值】\nL: ${rec.rawData.lab_max.L?.toFixed(2) ?? '--'}\nA: ${rec.rawData.lab_max.A?.toFixed(2) ?? '--'}\nB: ${rec.rawData.lab_max.B?.toFixed(2) ?? '--'}`
+    }
+    
+    if (rec.rawData.lab_mean) {
+      text += `\n\n【LAB均值】\nL: ${rec.rawData.lab_mean.L?.toFixed(2) ?? '--'}\nA: ${rec.rawData.lab_mean.A?.toFixed(2) ?? '--'}\nB: ${rec.rawData.lab_mean.B?.toFixed(2) ?? '--'}`
+    }
+    
+    if (rec.rawData.zl_lengths && rec.rawData.zl_lengths.length > 0) {
+      text += `\n\n【分段测量数据】\n${rec.rawData.zl_lengths.map((item, idx) => `段落${idx+1}: 像素高${item.pixel_height}, 像素宽${item.pixel_width}, 实际高${item.real_height_cm}cm, 实际宽${item.real_width_cm}cm`).join('\n')}`
+    }
   }
   navigator.clipboard.writeText(text).then(() => {
     ElMessage.success('数据复制成功')
@@ -817,10 +971,11 @@ const copyDetailData = () => {
   background-color: #409EFF;
 }
 
-.image-type-tag.corn,
-.image-type-tag.filament,
-.image-type-tag.leaf_sheath,
-.image-type-tag.ym {
+.image-type-tag.corn_filament_nature,
+.image-type-tag.corn_filament,
+.image-type-tag.corn_leaf_sheath,
+.image-type-tag.corn_shape,
+.image-type-tag.corn_all {
   background-color: #67C23A;
 }
 
@@ -1226,9 +1381,35 @@ const copyDetailData = () => {
   background: linear-gradient(90deg, #67C23A, #409EFF);
 }
 
+.trait-badge-confidence {
+  background: linear-gradient(90deg, #67C23A, #85CE61);
+}
+
+.trait-badge-width {
+  background: linear-gradient(90deg, #409EFF, #67C23A);
+}
+
 .trait-lab {
   color: #303133;
   font-size: 13px;
+}
+
+.trait-confidence {
+  font-size: 15px;
+  font-weight: 700;
+  color: #67C23A;
+  background: rgba(103, 194, 58, 0.08);
+  border-radius: 6px;
+  padding: 2px 12px;
+}
+
+.trait-width {
+  font-size: 15px;
+  font-weight: 700;
+  color: #409EFF;
+  background: rgba(64, 158, 255, 0.08);
+  border-radius: 6px;
+  padding: 2px 12px;
 }
 
 .result-shape-row {
@@ -1251,5 +1432,272 @@ const copyDetailData = () => {
   display: flex;
   flex-direction: column;
   gap: 18px;
+}
+
+/* 新增样式 */
+.info-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.info-grid .info-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(64, 158, 255, 0.1);
+}
+
+.info-grid .info-item:last-child {
+  border-bottom: none;
+}
+
+.info-grid .info-label {
+  font-size: 14px;
+  color: #606266;
+  font-weight: 500;
+}
+
+.info-grid .info-value {
+  font-size: 16px;
+  font-weight: 700;
+  color: #409eff;
+  font-family: 'Courier New', monospace;
+}
+
+.info-grid .info-value.shape-type {
+  background: linear-gradient(135deg, #409EFF, #67C23A);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 700;
+}
+
+.info-grid .info-value.confidence {
+  color: #67c23a;
+  background-color: rgba(103, 194, 58, 0.1);
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.width-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  padding: 12px;
+  background-color: rgba(64, 158, 255, 0.05);
+  border-radius: 8px;
+  border: 1px solid rgba(64, 158, 255, 0.1);
+}
+
+.summary-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.summary-label {
+  font-size: 12px;
+  color: #606266;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.summary-value {
+  font-size: 16px;
+  font-weight: 700;
+  color: #409eff;
+  font-family: 'Courier New', monospace;
+}
+
+.width-chart {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.width-bar {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 12px;
+  padding: 8px;
+  background-color: rgba(64, 158, 255, 0.05);
+  border-radius: 8px;
+  border: 1px solid rgba(64, 158, 255, 0.1);
+}
+
+.bar-label {
+  font-size: 14px;
+  color: #303133;
+  font-weight: 500;
+  min-width: 60px;
+}
+
+.bar-container {
+  flex: 1;
+  height: 24px;
+  background: linear-gradient(135deg, #f5f7fa 0%, #e4e7ed 100%);
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-right: 15px;
+}
+
+.bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #409eff, #67c23a);
+  border-radius: 12px;
+  transition: width 1s ease;
+  position: relative;
+}
+
+.bar-fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.bar-value {
+  font-size: 16px;
+  color: #409eff;
+  font-weight: 700;
+  min-width: 70px;
+  text-align: center;
+  font-family: 'Courier New', monospace;
+  background: linear-gradient(135deg, #409eff, #67c23a);
+  color: white;
+  padding: 6px 12px;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(64, 158, 255, 0.3);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.ratio-chart {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.ratio-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ratio-label {
+  font-size: 14px;
+  color: #303133;
+  font-weight: 500;
+}
+
+.ratio-progress {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.progress-bar {
+  flex: 1;
+  height: 20px;
+  background: linear-gradient(135deg, #f5f7fa 0%, #e4e7ed 100%);
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #e6a23c, #f56c6c);
+  border-radius: 10px;
+  transition: width 1s ease;
+  position: relative;
+}
+
+.progress-fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  animation: shimmer 2s infinite;
+}
+
+.ratio-value {
+  font-size: 13px;
+  color: #303133;
+  font-weight: 600;
+  min-width: 60px;
+  text-align: right;
+  font-family: 'Courier New', monospace;
+}
+
+.lab-section {
+  margin-bottom: 15px;
+}
+
+.lab-section h4 {
+  margin: 0 0 10px 0;
+  font-size: 16px;
+  color: #303133;
+  font-weight: 600;
+}
+
+.table-container {
+  margin-bottom: 0;
+}
+
+.measurement-table {
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+.measurement-table :deep(.el-table__header) {
+  background: linear-gradient(135deg, #409eff, #67c23a) !important;
+  display: table-header-group !important;
+}
+
+.measurement-table :deep(.el-table__header th) {
+  background: transparent !important;
+  color: #303133 !important;
+  font-weight: 600 !important;
+  border-bottom: none !important;
+  text-align: center !important;
+  padding: 12px 0 !important;
+}
+
+.measurement-table :deep(.el-table__body tr:hover) {
+  background-color: rgba(64, 158, 255, 0.05);
+}
+
+.measurement-table :deep(.el-table__body td) {
+  border-bottom: 1px solid #ebeef5;
+}
+
+.table-value {
+  font-family: 'Courier New', monospace;
+  font-weight: 600;
+  color: #409eff;
+  background-color: rgba(64, 158, 255, 0.1);
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 14px;
 }
 </style>
