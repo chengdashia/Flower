@@ -100,3 +100,16 @@ export const cornLengthWidth = (file) => {
   })
 }
 
+export const cornRachisColor = (file) => {
+  const formData = new FormData()
+  formData.append('image', file)
+
+  return request.post({
+    url: '/corn_rachis_color/analyze',
+    data: formData,
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  })
+}
+
