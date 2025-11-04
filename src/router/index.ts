@@ -46,9 +46,9 @@ const router = createRouter({
           component: () => import('../views/corn/CornOverallAnalysis.vue')
         },
         {
-          path: '/suihang-analysis',
-          name: 'suiHangAnalysis',
-          component: () => import('../views/corn/specific/SuiHangAnalysis.vue')
+          path: '/ear-row-analysis',
+          name: 'earRowAnalysis',
+          component: () => import('../views/corn/specific/EarRowAnalysis.vue')
         },
         {
           path: '/top-color-analysis',

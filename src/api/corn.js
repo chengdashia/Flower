@@ -126,3 +126,16 @@ export const cornTopColor = (file) => {
   })
 }
 
+export const cornEarRow = (file) => {
+  const formData = new FormData()
+  formData.append('image', file)
+
+  return request.post({
+    url: '/corn_ear_row/detect',
+    data: formData,
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  })
+}
+

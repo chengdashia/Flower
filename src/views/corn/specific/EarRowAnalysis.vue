@@ -1,8 +1,8 @@
 <template>
   <div class="corn-trait-container">
     <div class="page-header">
-      <h1 class="page-title">玉米整体分析</h1>
-      <p class="page-description">上传玉米图片，获取长宽数据、形状分析结果和LAB分析结果</p>
+      <h1 class="page-title">玉米穗行分析</h1>
+      <p class="page-description">上传玉米图片，检测并统计玉米穗行数量</p>
     </div>
 
     <div class="content-wrapper">
@@ -52,7 +52,7 @@
     <!-- 数据统计和图表区域 -->
     <div v-if="analysisResult" class="data-analysis-section">
       <div class="section-header">
-        <h2>数据分析</h2>
+        <h2>分析结果</h2>
         <el-button 
           type="primary" 
           @click="copyAllData"
@@ -63,393 +63,74 @@
         </el-button>
       </div>
 
-      <!-- 第一部分：分段测量数据 -->
-      <div class="data-section">
-        <div class="section-title-wrapper">
-          <div class="section-icon">
-                  <el-icon><Histogram /></el-icon>
-                </div>
-          <h3 class="section-title">分段测量数据</h3>
-          <div class="section-description">玉米各段落的像素尺寸和实际尺寸测量结果</div>
-          <el-button 
-            type="primary" 
-            @click="copySegmentData"
-            :icon="CopyDocument"
-            size="small"
-            style="margin-left: auto;"
-          >
-            复制数据
-          </el-button>
-                </div>
-        
-        <div class="section-content">
-          <div class="table-container" v-if="analysisResult.results && analysisResult.results[0].zl_lengths && analysisResult.results[0].zl_lengths.length > 0">
-            <el-table 
-              :data="analysisResult.results[0].zl_lengths" 
-              border 
-              style="width: 100%;" 
-              class="measurement-table"
-              :show-header="true"
-              header-align="center"
-            >
-              <el-table-column prop="pixel_height" label="像素高度" width="120" align="center" header-align="center">
-                <template #default="scope">
-                  <span class="table-value">{{ scope.row.pixel_height }} px</span>
-                </template>
-              </el-table-column>
-              <el-table-column prop="pixel_width" label="像素宽度" width="120" align="center" header-align="center">
-                <template #default="scope">
-                  <span class="table-value">{{ scope.row.pixel_width }} px</span>
-                </template>
-              </el-table-column>
-              <el-table-column prop="real_height_cm" label="实际高度(cm)" width="140" align="center" header-align="center">
-                <template #default="scope">
-                  <span class="table-value">{{ scope.row.real_height_cm }} cm</span>
-                </template>
-              </el-table-column>
-              <el-table-column prop="real_width_cm" label="实际宽度(cm)" width="140" align="center" header-align="center">
-                <template #default="scope">
-                  <span class="table-value">{{ scope.row.real_width_cm }} cm</span>
-                </template>
-              </el-table-column>
-            </el-table>
-          </div>
-                </div>
-                </div>
-
-      <!-- 第二部分：性状分析结果 -->
+      <!-- 穗行数量统计 -->
       <div class="data-section">
         <div class="section-title-wrapper">
           <div class="section-icon">
             <el-icon><DataAnalysis /></el-icon>
-                </div>
-          <h3 class="section-title">性状分析结果</h3>
-          <div class="section-description">玉米形态特征和比例分析数据</div>
+          </div>
+          <h3 class="section-title">穗行数量统计</h3>
+          <div class="section-description">检测到的玉米穗行数量</div>
           <el-button 
             type="primary" 
-            @click="copyTraitData"
+            @click="copyEarRowData"
             :icon="CopyDocument"
             size="small"
             style="margin-left: auto;"
           >
             复制数据
           </el-button>
-              </div>
+        </div>
         
         <div class="section-content">
           <el-row :gutter="25">
-            <!-- 基础信息卡片 -->
-            <el-col :xs="24" :sm="12" :md="8">
+            <el-col :xs="24" :sm="24" :md="24">
               <div class="info-card">
                 <div class="card-header">
                   <el-icon><Histogram /></el-icon>
-                  <span>基础信息</span>
-            </div>
-                <div class="card-content">
-                  <div class="info-item">
-                    <div class="info-label">形状类型</div>
-                    <div class="info-value shape-type">{{ analysisResult.results[0].shape_type }}</div>
-          </div>
-                  <div class="info-item">
-                    <div class="info-label">测量点数量</div>
-                    <div class="info-value">{{ analysisResult.results[0].midline_widths.length }} 个</div>
-        </div>
-                </div>
-              </div>
-            </el-col>
-
-            <!-- 中线宽度分析 -->
-            <el-col :xs="24" :sm="12" :md="8">
-              <div class="info-card">
-                <div class="card-header">
-                  <el-icon><TrendCharts /></el-icon>
-                  <span>中线宽度分析</span>
-                  <el-button 
-                    type="primary" 
-                    @click="copyWidthData"
-                    :icon="CopyDocument"
-                    size="small"
-                    style="margin-left: auto;"
-                  >
-                    复制
-                  </el-button>
+                  <span>检测结果</span>
                 </div>
                 <div class="card-content">
-                  <div class="width-summary">
-                    <div class="summary-item">
-                      <div class="summary-label">最大宽度</div>
-                      <div class="summary-value">{{ Math.max(...analysisResult.results[0].midline_widths) }} px</div>
-                    </div>
-                    <div class="summary-item">
-                      <div class="summary-label">平均宽度</div>
-                      <div class="summary-value">{{ Math.round(analysisResult.results[0].midline_widths.reduce((a, b) => a + b, 0) / analysisResult.results[0].midline_widths.length) }} px</div>
-                    </div>
-                    <div class="summary-item">
-                      <div class="summary-label">最小宽度</div>
-                      <div class="summary-value">{{ Math.min(...analysisResult.results[0].midline_widths) }} px</div>
-                    </div>
+                  <div class="ear-row-display">
+                    <div class="ear-row-number">{{ analysisResult.number_of_ears }}</div>
+                    <div class="ear-row-label">穗行</div>
                   </div>
-            <div class="width-chart">
-              <div 
-                      v-for="(width, index) in analysisResult.results[0].midline_widths.slice(0, 8)" 
-                :key="index"
-                class="width-bar"
-              >
-                      <div class="bar-label">P{{ index + 1 }}</div>
-                <div class="bar-container">
-                  <div 
-                    class="bar-fill" 
-                    :style="{ width: getWidthPercentage(width) + '%' }"
-                  ></div>
-                </div>
-                <span class="bar-value">{{ width }}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-            </el-col>
-
-            <!-- 比例数据 -->
-            <el-col :xs="24" :sm="12" :md="8">
-              <div class="info-card">
-                <div class="card-header">
-                  <el-icon><PieChart /></el-icon>
-                  <span>比例数据</span>
-                  <el-button 
-                    type="primary" 
-                    @click="copyRatioData"
-                    :icon="CopyDocument"
-                    size="small"
-                    style="margin-left: auto;"
-                  >
-                    复制
-                  </el-button>
-                </div>
-                <div class="card-content">
-            <div class="ratio-chart">
-              <div class="ratio-item">
-                <div class="ratio-label">1:3 比例</div>
-                <div class="ratio-progress">
-                  <div class="progress-bar">
-                    <div 
-                      class="progress-fill" 
-                      :style="{ width: getRatioPercentage(analysisResult.results[0].ratios.ratio_1_3) + '%' }"
-                    ></div>
-                  </div>
-                  <span class="ratio-value">{{ analysisResult.results[0].ratios.ratio_1_3.toFixed(4) }}</span>
                 </div>
               </div>
-              <div class="ratio-item">
-                <div class="ratio-label">1:5 比例</div>
-                <div class="ratio-progress">
-                  <div class="progress-bar">
-                    <div 
-                      class="progress-fill" 
-                      :style="{ width: getRatioPercentage(analysisResult.results[0].ratios.ratio_1_5) + '%' }"
-                    ></div>
-                  </div>
-                  <span class="ratio-value">{{ analysisResult.results[0].ratios.ratio_1_5.toFixed(4) }}</span>
-                </div>
-              </div>
-              <div class="ratio-item">
-                <div class="ratio-label">3:5 比例</div>
-                <div class="ratio-progress">
-                  <div class="progress-bar">
-                    <div 
-                      class="progress-fill" 
-                      :style="{ width: getRatioPercentage(analysisResult.results[0].ratios.ratio_3_5) + '%' }"
-                    ></div>
-                  </div>
-                  <span class="ratio-value">{{ analysisResult.results[0].ratios.ratio_3_5.toFixed(4) }}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
             </el-col>
           </el-row>
+        </div>
+      </div>
 
-          <!-- 分析图片展示（三个主要图片） -->
-          <div class="analysis-images">
-            <div class="images-title">
-              <el-icon><DataAnalysis /></el-icon>
-              <span>分析图片</span>
-            </div>
-            <div class="images-grid" v-if="analysisResult.results && analysisResult.results.length > 0">
+      <!-- 结果图片展示 -->
+      <div class="data-section">
+        <div class="section-title-wrapper">
+          <div class="section-icon">
+            <el-icon><DataAnalysis /></el-icon>
+          </div>
+          <h3 class="section-title">分析结果图片</h3>
+          <div class="section-description">标注了穗行检测结果的分析图片</div>
+        </div>
+        
+        <div class="section-content">
+          <div class="result-images">
+            <div class="images-grid" v-if="analysisResult.result_image">
               <el-row :gutter="18" class="image-row">
-                <el-col :xs="24" :sm="8" v-if="analysisResult.results[0].image.analysis">
+                <el-col :xs="24" :sm="24" :md="24">
                   <el-card class="image-card">
-                    <div class="image-title">分析图片</div>
-                    <img :src="getImageUrl(analysisResult.results[0].image.analysis)" alt="分析图片" class="result-img" @click="openPreview(getImageUrl(analysisResult.results[0].image.analysis))" />
-                  </el-card>
-                </el-col>
-                <el-col :xs="24" :sm="8" v-if="analysisResult.results[0].image.mask">
-                  <el-card class="image-card">
-                    <div class="image-title">掩码图片</div>
-                    <img :src="getImageUrl(analysisResult.results[0].image.mask)" alt="掩码图片" class="result-img" @click="openPreview(getImageUrl(analysisResult.results[0].image.mask))" />
-                  </el-card>
-                </el-col>
-                <el-col :xs="24" :sm="8" v-if="analysisResult.results[0].image.overlay">
-                  <el-card class="image-card">
-                    <div class="image-title">叠加图片</div>
-                    <img :src="getImageUrl(analysisResult.results[0].image.overlay)" alt="叠加图片" class="result-img" @click="openPreview(getImageUrl(analysisResult.results[0].image.overlay))" />
+                    <div class="image-title">检测结果图</div>
+                    <img 
+                      :src="getImageUrl(analysisResult.result_image)" 
+                      alt="检测结果图" 
+                      class="result-img" 
+                      @click="openPreview(getImageUrl(analysisResult.result_image))" 
+                    />
                   </el-card>
                 </el-col>
               </el-row>
             </div>
           </div>
         </div>
-      </div>
-
-      <!-- 第三部分：process_single_image数据 -->
-      <div class="data-section">
-        <div class="section-title-wrapper">
-          <div class="section-icon">
-            <el-icon><Histogram /></el-icon>
-          </div>
-          <h3 class="section-title">LAB色彩分析</h3>
-          <div class="section-description">玉米LAB色彩空间的最大值和均值分析</div>
-          <el-button 
-            type="primary" 
-            @click="copyLabData"
-            :icon="CopyDocument"
-            size="small"
-            style="margin-left: auto;"
-          >
-            复制数据
-          </el-button>
-          </div>
-        
-        <div class="section-content">
-          <el-row :gutter="25">
-            <!-- 置信度信息 -->
-            <el-col :xs="24" :sm="8" :md="8" v-if="analysisResult.results && analysisResult.results[0].process_single_image?.confidence">
-              <div class="chart-card">
-                <div class="chart-title">
-                  <el-icon><DataAnalysis /></el-icon>
-                  <span>识别置信度</span>
-                  <el-button 
-                    type="primary" 
-                    @click="copyConfidenceData"
-                    :icon="CopyDocument"
-                    size="small"
-                    style="margin-left: auto;"
-                  >
-                    复制
-                  </el-button>
-                </div>
-                <div class="chart-content">
-                  <div class="confidence-display">
-                    <div class="confidence-value">{{ (analysisResult.results[0].process_single_image.confidence * 100).toFixed(2) }}%</div>
-                    <div class="confidence-bar">
-                      <div class="confidence-fill" :style="{ width: (analysisResult.results[0].process_single_image.confidence * 100) + '%' }"></div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </el-col>
-
-            <!-- LAB最大值 -->
-            <el-col :xs="24" :sm="8" :md="8" v-if="analysisResult.results && analysisResult.results[0].process_single_image?.lab_max">
-              <div class="chart-card lab-charts">
-                <div class="chart-header">
-                  <h3><el-icon><Histogram /></el-icon> LAB 最大值</h3>
-                  <el-button 
-                    type="primary" 
-                    @click="copyLabMaxData"
-                    :icon="CopyDocument"
-                    size="small"
-                    style="margin-left: auto;"
-                  >
-                    复制
-                  </el-button>
-                </div>
-                <el-row :gutter="20" direction="vertical">
-                  <el-col :xs="24" :sm="24" :md="24" v-for="key in ['L','A','B']" :key="'labmax-'+key" style="margin-bottom: 10px;">
-                    <el-card class="lab-card" :body-style="{ padding: '15px' }">
-                      <div class="lab-value">
-                        <span class="lab-label">{{ key }}:</span>
-                        <span class="lab-number">{{ analysisResult.results[0].process_single_image.lab_max[key]?.toFixed(2) ?? '--' }}</span>
-                      </div>
-                      <div class="progress-bar">
-                        <div class="progress" :style="{ width: getLabProgressWidth(key, analysisResult.results[0].process_single_image.lab_max[key]) + '%', backgroundColor: getLabColorForChannel(key) }"></div>
-                      </div>
-                      <div class="channel-description">{{ getLabChannelDescription(key) }}</div>
-                    </el-card>
-                  </el-col>
-                </el-row>
-              </div>
-            </el-col>
-
-            <!-- LAB均值 -->
-            <el-col :xs="24" :sm="8" :md="8" v-if="analysisResult.results && analysisResult.results[0].process_single_image?.lab_mean">
-              <div class="chart-card lab-charts">
-                <div class="chart-header">
-                  <h3><el-icon><Histogram /></el-icon> LAB 均值</h3>
-                  <el-button 
-                    type="primary" 
-                    @click="copyLabMeanData"
-                    :icon="CopyDocument"
-                    size="small"
-                    style="margin-left: auto;"
-                  >
-                    复制
-                  </el-button>
-                </div>
-                <el-row :gutter="20" direction="vertical">
-                  <el-col :xs="24" :sm="24" :md="24" v-for="key in ['L','A','B']" :key="'labmean-'+key" style="margin-bottom: 10px;">
-                    <el-card class="lab-card" :body-style="{ padding: '15px' }">
-                      <div class="lab-value">
-                        <span class="lab-label">{{ key }}:</span>
-                        <span class="lab-number">{{ analysisResult.results[0].process_single_image.lab_mean[key]?.toFixed(2) ?? '--' }}</span>
-                      </div>
-                      <div class="progress-bar">
-                        <div class="progress" :style="{ width: getLabProgressWidth(key, analysisResult.results[0].process_single_image.lab_mean[key]) + '%', backgroundColor: getLabColorForChannel(key) }"></div>
-                      </div>
-                      <div class="channel-description">{{ getLabChannelDescription(key) }}</div>
-                    </el-card>
-                  </el-col>
-                </el-row>
-              </div>
-            </el-col>
-          </el-row>
-
-          <!-- process_single_image中的四个图片 -->
-          <div class="process-images">
-            <div class="images-title">
-              <el-icon><DataAnalysis /></el-icon>
-              <span>处理图片</span>
-            </div>
-            <div class="images-grid" v-if="analysisResult.results && analysisResult.results.length > 0">
-              <el-row :gutter="18" class="image-row">
-                <el-col :xs="24" :sm="6" v-if="analysisResult.results[0].process_single_image?.center_part">
-                  <el-card class="image-card">
-                    <div class="image-title">中心部分</div>
-                    <img :src="getImageUrl(analysisResult.results[0].process_single_image.center_part)" alt="中心部分" class="result-img" @click="openPreview(getImageUrl(analysisResult.results[0].process_single_image.center_part))" />
-                  </el-card>
-                </el-col>
-                <el-col :xs="24" :sm="6" v-if="analysisResult.results[0].process_single_image?.gs_only_image">
-                  <el-card class="image-card">
-                    <div class="image-title">仅灰度图</div>
-                    <img :src="getImageUrl(analysisResult.results[0].process_single_image.gs_only_image)" alt="仅灰度图" class="result-img" @click="openPreview(getImageUrl(analysisResult.results[0].process_single_image.gs_only_image))" />
-                  </el-card>
-                </el-col>
-                <el-col :xs="24" :sm="6" v-if="analysisResult.results[0].process_single_image?.highlight">
-                  <el-card class="image-card">
-                    <div class="image-title">高亮图</div>
-                    <img :src="getImageUrl(analysisResult.results[0].process_single_image.highlight)" alt="高亮图" class="result-img" @click="openPreview(getImageUrl(analysisResult.results[0].process_single_image.highlight))" />
-                  </el-card>
-                </el-col>
-                <el-col :xs="24" :sm="6" v-if="analysisResult.results[0].process_single_image?.unet_result">
-                  <el-card class="image-card">
-                    <div class="image-title">UNet结果</div>
-                    <img :src="getImageUrl(analysisResult.results[0].process_single_image.unet_result)" alt="UNet结果" class="result-img" @click="openPreview(getImageUrl(analysisResult.results[0].process_single_image.unet_result))" />
-              </el-card>
-            </el-col>
-          </el-row>
-        </div>
-      </div>
-    </div>
       </div>
     </div>
 
@@ -488,7 +169,7 @@ import { ref, reactive, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElLoading, ElDialog } from 'element-plus'
 import { Upload, InfoFilled, Delete, DataAnalysis, Search, PieChart, TrendCharts, CopyDocument, Histogram, RefreshRight, ZoomIn } from '@element-plus/icons-vue'
-import {cornAllAnalyzer} from '@/api/corn'
+import {cornEarRow} from '@/api/corn'
 
 const router = useRouter()
 const fileInput = ref(null)
@@ -636,7 +317,7 @@ const submitImage = async () => {
   })
 
   try {
-    const response = await cornAllAnalyzer(uploadedFile.value)
+    const response = await cornEarRow(uploadedFile.value)
 
     if (response.code === 200) {
       analysisResult.value = response.data
@@ -672,137 +353,22 @@ const getImageUrl = (imagePath) => {
   return `${baseURL}${imagePath}`
 }
 
-// 获取宽度百分比
-const getWidthPercentage = (width) => {
-  // 找到最大宽度值作为基准
-  if (!analysisResult.value?.results?.[0]?.midline_widths) return 0
-  const maxWidth = Math.max(...analysisResult.value.results[0].midline_widths)
-  return maxWidth > 0 ? (width / maxWidth) * 100 : 0
-}
-
-// 获取比例百分比
-const getRatioPercentage = (ratio) => {
-  // 找到最大比例值作为基准
-  if (!analysisResult.value?.results?.[0]?.ratios) return 0
-  const ratios = analysisResult.value.results[0].ratios
-  const maxRatio = Math.max(ratios.ratio_1_3, ratios.ratio_1_5, ratios.ratio_3_5)
-  return maxRatio > 0 ? (ratio / maxRatio) * 100 : 0
-}
-
 // 一键复制所有数据
 const copyAllData = () => {
   if (!analysisResult.value) return
-  
-  const result = analysisResult.value.results?.[0]
-  if (!result) return
 
-  // LAB最大值
-  let labMax = result.process_single_image?.lab_max
-  let labMaxText = labMax ? `L: ${labMax.L?.toFixed(2) ?? '--'}\nA: ${labMax.A?.toFixed(2) ?? '--'}\nB: ${labMax.B?.toFixed(2) ?? '--'}` : '--'
-  // LAB均值
-  let labMean = result.process_single_image?.lab_mean
-  let labMeanText = labMean ? `L: ${labMean.L?.toFixed(2) ?? '--'}\nA: ${labMean.A?.toFixed(2) ?? '--'}\nB: ${labMean.B?.toFixed(2) ?? '--'}` : '--'
-  // 分段测量
-  let zlLengths = result.zl_lengths
-  let zlLengthsText = zlLengths && zlLengths.length > 0 ? zlLengths.map((item, idx) => `段${idx+1}: 像素高${item.pixel_height}, 像素宽${item.pixel_width}, 实际高${item.real_height_cm}cm, 实际宽${item.real_width_cm}cm`).join('\\n') : '--'
-
-  const dataText = `玉米整体分析数据\n\n识别统计:\n- 形状类型: ${result.shape_type}\n\n中线宽度数据:\n${result.midline_widths.map((width, index) => `- 位置${index + 1}: ${width}`).join('\\n')}\n\n比例数据:\n- 1:3 比例: ${result.ratios.ratio_1_3.toFixed(4)}\n- 1:5 比例: ${result.ratios.ratio_1_5.toFixed(4)}\n- 3:5 比例: ${result.ratios.ratio_3_5.toFixed(4)}\n\nLAB最大值:\n${labMaxText}\n\nLAB均值:\n${labMeanText}\n\n分段测量数据:\n${zlLengthsText}\n\n分析时间: ${new Date().toLocaleString('zh-CN')}`
+  const dataText = `玉米穗行分析数据\n\n穗行数量: ${analysisResult.value.number_of_ears} 行\n\n结果图片: ${analysisResult.value.result_image}\n\n分析时间: ${new Date().toLocaleString('zh-CN')}`
 
   copyToClipboard(dataText, '数据复制成功')
 }
 
-// 复制分段测量数据
-const copySegmentData = () => {
-  if (!analysisResult.value?.results?.[0]?.zl_lengths) return
+// 复制穗行数据
+const copyEarRowData = () => {
+  if (!analysisResult.value) return
   
-  const zlLengths = analysisResult.value.results[0].zl_lengths
-  const dataText = `分段测量数据\n\n${zlLengths.map((item, idx) => `段落${idx+1}:\n- 像素高度: ${item.pixel_height} px\n- 像素宽度: ${item.pixel_width} px\n- 实际高度: ${item.real_height_cm} cm\n- 实际宽度: ${item.real_width_cm} cm`).join('\n\n')}\n\n复制时间: ${new Date().toLocaleString('zh-CN')}`
+  const dataText = `穗行数量统计\n\n检测到的穗行数量: ${analysisResult.value.number_of_ears} 行\n\n复制时间: ${new Date().toLocaleString('zh-CN')}`
   
-  copyToClipboard(dataText, '分段测量数据复制成功')
-}
-
-// 复制性状分析数据
-const copyTraitData = () => {
-  if (!analysisResult.value?.results?.[0]) return
-  
-  const result = analysisResult.value.results[0]
-  const dataText = `性状分析结果\n\n基础信息:\n- 形状类型: ${result.shape_type}\n- 测量点数量: ${result.midline_widths.length} 个\n\n中线宽度分析:\n- 最大宽度: ${Math.max(...result.midline_widths)} px\n- 平均宽度: ${Math.round(result.midline_widths.reduce((a, b) => a + b, 0) / result.midline_widths.length)} px\n- 最小宽度: ${Math.min(...result.midline_widths)} px\n\n比例数据:\n- 1:3 比例: ${result.ratios.ratio_1_3.toFixed(4)}\n- 1:5 比例: ${result.ratios.ratio_1_5.toFixed(4)}\n- 3:5 比例: ${result.ratios.ratio_3_5.toFixed(4)}\n\n复制时间: ${new Date().toLocaleString('zh-CN')}`
-  
-  copyToClipboard(dataText, '性状分析数据复制成功')
-}
-
-// 复制中线宽度数据
-const copyWidthData = () => {
-  if (!analysisResult.value?.results?.[0]?.midline_widths) return
-  
-  const midlineWidths = analysisResult.value.results[0].midline_widths
-  const dataText = `中线宽度数据\n\n${midlineWidths.map((width, index) => `- 位置${index + 1}: ${width} px`).join('\\n')}\n\n复制时间: ${new Date().toLocaleString('zh-CN')}`
-  
-  copyToClipboard(dataText, '中线宽度数据复制成功')
-}
-
-// 复制比例数据
-const copyRatioData = () => {
-  if (!analysisResult.value?.results?.[0]?.ratios) return
-  
-  const ratios = analysisResult.value.results[0].ratios
-  const dataText = `比例数据\n\n1:3 比例: ${ratios.ratio_1_3.toFixed(4)}\n1:5 比例: ${ratios.ratio_1_5.toFixed(4)}\n3:5 比例: ${ratios.ratio_3_5.toFixed(4)}\n\n复制时间: ${new Date().toLocaleString('zh-CN')}`
-  
-  copyToClipboard(dataText, '比例数据复制成功')
-}
-
-// 复制置信度数据
-const copyConfidenceData = () => {
-  if (!analysisResult.value?.results?.[0]?.process_single_image?.confidence) return
-  
-  const confidence = analysisResult.value.results[0].process_single_image.confidence
-  const dataText = `识别置信度\n\n置信度: ${(confidence * 100).toFixed(2)}%\n\n复制时间: ${new Date().toLocaleString('zh-CN')}`
-  
-  copyToClipboard(dataText, '置信度数据复制成功')
-}
-
-// 复制LAB最大值数据
-const copyLabMaxData = () => {
-  if (!analysisResult.value?.results?.[0]?.process_single_image?.lab_max) return
-  
-  const labMax = analysisResult.value.results[0].process_single_image.lab_max
-  const dataText = `LAB最大值\n\nL: ${labMax.L?.toFixed(2) ?? '--'}\nA: ${labMax.A?.toFixed(2) ?? '--'}\nB: ${labMax.B?.toFixed(2) ?? '--'}\n\n复制时间: ${new Date().toLocaleString('zh-CN')}`
-  
-  copyToClipboard(dataText, 'LAB最大值数据复制成功')
-}
-
-// 复制LAB均值数据
-const copyLabMeanData = () => {
-  if (!analysisResult.value?.results?.[0]?.process_single_image?.lab_mean) return
-  
-  const labMean = analysisResult.value.results[0].process_single_image.lab_mean
-  const dataText = `LAB均值\n\nL: ${labMean.L?.toFixed(2) ?? '--'}\nA: ${labMean.A?.toFixed(2) ?? '--'}\nB: ${labMean.B?.toFixed(2) ?? '--'}\n\n复制时间: ${new Date().toLocaleString('zh-CN')}`
-  
-  copyToClipboard(dataText, 'LAB均值数据复制成功')
-}
-
-// 复制LAB数据
-const copyLabData = () => {
-  if (!analysisResult.value?.results?.[0]?.process_single_image) return
-  
-  const processData = analysisResult.value.results[0].process_single_image
-  let dataText = `LAB色彩分析数据\n\n`
-  
-  if (processData.confidence) {
-    dataText += `识别置信度: ${(processData.confidence * 100).toFixed(2)}%\n\n`
-  }
-  
-  if (processData.lab_max) {
-    dataText += `LAB最大值:\n- L: ${processData.lab_max.L?.toFixed(2) ?? '--'}\n- A: ${processData.lab_max.A?.toFixed(2) ?? '--'}\n- B: ${processData.lab_max.B?.toFixed(2) ?? '--'}\n\n`
-  }
-  
-  if (processData.lab_mean) {
-    dataText += `LAB均值:\n- L: ${processData.lab_mean.L?.toFixed(2) ?? '--'}\n- A: ${processData.lab_mean.A?.toFixed(2) ?? '--'}\n- B: ${processData.lab_mean.B?.toFixed(2) ?? '--'}\n\n`
-  }
-  
-  dataText += `复制时间: ${new Date().toLocaleString('zh-CN')}`
-  
-  copyToClipboard(dataText, 'LAB分析数据复制成功')
+  copyToClipboard(dataText, '穗行数据复制成功')
 }
 
 // 通用复制到剪贴板方法
@@ -834,38 +400,6 @@ const copyToClipboard = (text, successMessage) => {
     }
     document.body.removeChild(textarea)
   }
-}
-
-// LAB 卡片相关方法，参考 LeafSheathFileTraitFile.vue
-const getLabProgressWidth = (channel, value) => {
-  const maxValues = {
-    'L': 100,
-    'A': 128,
-    'B': 128
-  }
-  if (channel === 'A' || channel === 'B') {
-    return ((value + 128) / 256) * 100
-  } else {
-    return (value / maxValues[channel]) * 100
-  }
-}
-
-const getLabColorForChannel = (channel) => {
-  const colors = {
-    'L': '#333333',
-    'A': '#ff5252',
-    'B': '#2196f3'
-  }
-  return colors[channel] || '#409EFF'
-}
-
-const getLabChannelDescription = (channel) => {
-  const descriptions = {
-    'L': '亮度 (0-100)',
-    'A': '红绿轴 (-128 到 +127)',
-    'B': '蓝黄轴 (-128 到 +127)'
-  }
-  return descriptions[channel] || ''
 }
 
 onMounted(() => {
@@ -1439,6 +973,37 @@ onBeforeUnmount(() => {
   border-top: 2px solid #f0f2f5;
 }
 
+/* 穗行数量显示样式 */
+.ear-row-display {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  text-align: center;
+}
+
+.ear-row-number {
+  font-size: 72px;
+  font-weight: 700;
+  color: #409eff;
+  line-height: 1;
+  margin-bottom: 15px;
+  background: linear-gradient(135deg, #409eff, #67c23a);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: 0 4px 12px rgba(64, 158, 255, 0.3);
+  font-family: 'Courier New', monospace;
+}
+
+.ear-row-label {
+  font-size: 24px;
+  font-weight: 600;
+  color: #606266;
+  margin-top: 10px;
+}
+
 .images-title {
   display: flex;
   align-items: center;
@@ -1757,6 +1322,15 @@ onBeforeUnmount(() => {
   .segment-badge {
     font-size: 11px;
     padding: 4px 8px;
+  }
+
+  /* 移动端穗行数量显示样式 */
+  .ear-row-number {
+    font-size: 48px;
+  }
+
+  .ear-row-label {
+    font-size: 18px;
   }
 }
 
@@ -2123,5 +1697,44 @@ onBeforeUnmount(() => {
   margin-top: 25px;
   padding-top: 20px;
   border-top: 2px solid #f0f2f5;
+}
+
+/* 穗行数量显示样式 */
+.ear-row-display {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  text-align: center;
+}
+
+.ear-row-number {
+  font-size: 72px;
+  font-weight: 700;
+  color: #409eff;
+  line-height: 1;
+  margin-bottom: 15px;
+  background: linear-gradient(135deg, #409eff, #67c23a);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: 0 4px 12px rgba(64, 158, 255, 0.3);
+  font-family: 'Courier New', monospace;
+}
+
+.ear-row-label {
+  font-size: 24px;
+  font-weight: 600;
+  color: #606266;
+  margin-top: 10px;
+}
+
+.result-images {
+  margin-top: 0;
+}
+
+.result-images .images-grid {
+  margin-bottom: 0;
 }
 </style>
