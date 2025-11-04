@@ -137,6 +137,11 @@ const menuItems = [
         children: [
           { index: '/corn-shape-analysis', title: '形状分析' },
           { index: '/corn-overall-analysis', title: '整体分析' },
+          { index: '/suihang-analysis', title: '穗行检测' },
+          { index: '/top-color-analysis', title: '顶部颜色分析' },
+          { index: '/rachis-color-analysis', title: '穗轴颜色分析' },
+          { index: '/appearance-grade-analysis', title: '外形分级检测' },
+          { index: '/height-width-analysis', title: '长度/宽度测量' },
         ]
       },
 

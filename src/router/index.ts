@@ -46,6 +46,31 @@ const router = createRouter({
           component: () => import('../views/corn/CornOverallAnalysis.vue')
         },
         {
+          path: '/suihang-analysis',
+          name: 'suiHangAnalysis',
+          component: () => import('../views/corn/specific/SuiHangAnalysis.vue')
+        },
+        {
+          path: '/top-color-analysis',
+          name: 'topColorAnalysis',
+          component: () => import('../views/corn/specific/TopColorAnalysis.vue')
+        },
+        {
+          path: '/rachis-color-analysis',
+          name: 'rachisColorAnalysis',
+          component: () => import('../views/corn/specific/RachisColorAnalysis.vue')
+        },
+        {
+          path: '/appearance-grade-analysis',
+          name: 'appearanceGradeAnalysis',
+          component: () => import('../views/corn/specific/AppearanceGradeAnalysis.vue')
+        },
+        {
+          path: '/height-width-analysis',
+          name: 'heightWidthAnalysis',
+          component: () => import('../views/corn/specific/HeightWidthAnalysis.vue')
+        },
+        {
           path: '/user-center',
           name: 'userCenter',
           component: () => import('../views/user/UserCenter.vue')
