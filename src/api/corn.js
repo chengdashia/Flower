@@ -113,3 +113,16 @@ export const cornRachisColor = (file) => {
   })
 }
 
+export const cornTopColor = (file) => {
+  const formData = new FormData()
+  formData.append('image', file)
+
+  return request.post({
+    url: '/corn_top_color/analyze',
+    data: formData,
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  })
+}
+

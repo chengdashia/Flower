@@ -1,8 +1,8 @@
 <template>
   <div class="corn-trait-container">
     <div class="page-header">
-      <h1 class="page-title">玉米整体分析</h1>
-      <p class="page-description">上传玉米图片，获取长宽数据、形状分析结果和LAB分析结果</p>
+      <h1 class="page-title">玉米顶部颜色分析</h1>
+      <p class="page-description">上传玉米图片，自动分析顶部区域的 LAB 均值并展示裁剪图与结果图</p>
     </div>
 
     <div class="content-wrapper">
@@ -49,8 +49,101 @@
       </el-button>
     </div>
 
-    <!-- 数据统计和图表区域 -->
-    <div v-if="analysisResult" class="data-analysis-section">
+    <!-- 顶部颜色分析结果展示 -->
+    <div v-if="analysisResult && (analysisResult.L_mean !== undefined || analysisResult.A_mean !== undefined || analysisResult.B_mean !== undefined)" class="data-analysis-section">
+      <div class="section-header">
+        <h2>顶部颜色 LAB 均值</h2>
+        <el-button 
+          type="primary" 
+          @click="copyTopColorData"
+          :icon="CopyDocument"
+          size="large"
+        >
+          一键复制数据
+        </el-button>
+      </div>
+
+      <div class="data-section">
+        <div class="section-title-wrapper">
+          <div class="section-icon">
+            <el-icon><Histogram /></el-icon>
+          </div>
+          <h3 class="section-title">LAB 均值</h3>
+          <div class="section-description">顶部区域的 L/A/B 三通道均值</div>
+        </div>
+
+        <div class="section-content">
+          <el-row :gutter="25">
+            <el-col :xs="24" :sm="8" :md="8">
+              <div class="info-card">
+                <div class="card-header">
+                  <el-icon><Histogram /></el-icon>
+                  <span>亮度 L</span>
+                </div>
+                <div class="card-content">
+                  <div class="lab-value"><span class="lab-label">L:</span><span class="lab-number">{{ Number(analysisResult.L_mean).toFixed(2) }}</span></div>
+                  <div class="progress-bar"><div class="progress" :style="{ width: getLabProgressWidth('L', analysisResult.L_mean) + '%', backgroundColor: getLabColorForChannel('L') }"></div></div>
+                </div>
+              </div>
+            </el-col>
+            <el-col :xs="24" :sm="8" :md="8">
+              <div class="info-card">
+                <div class="card-header">
+                  <el-icon><Histogram /></el-icon>
+                  <span>红绿轴 A</span>
+                </div>
+                <div class="card-content">
+                  <div class="lab-value"><span class="lab-label">A:</span><span class="lab-number">{{ Number(analysisResult.A_mean).toFixed(2) }}</span></div>
+                  <div class="progress-bar"><div class="progress" :style="{ width: getLabProgressWidth('A', analysisResult.A_mean) + '%', backgroundColor: getLabColorForChannel('A') }"></div></div>
+                </div>
+              </div>
+            </el-col>
+            <el-col :xs="24" :sm="8" :md="8">
+              <div class="info-card">
+                <div class="card-header">
+                  <el-icon><Histogram /></el-icon>
+                  <span>蓝黄轴 B</span>
+                </div>
+                <div class="card-content">
+                  <div class="lab-value"><span class="lab-label">B:</span><span class="lab-number">{{ Number(analysisResult.B_mean).toFixed(2) }}</span></div>
+                  <div class="progress-bar"><div class="progress" :style="{ width: getLabProgressWidth('B', analysisResult.B_mean) + '%', backgroundColor: getLabColorForChannel('B') }"></div></div>
+                </div>
+              </div>
+            </el-col>
+          </el-row>
+        </div>
+      </div>
+
+      <div class="data-section">
+        <div class="section-title-wrapper">
+          <div class="section-icon">
+            <el-icon><DataAnalysis /></el-icon>
+          </div>
+          <h3 class="section-title">分析图片</h3>
+          <div class="section-description">裁剪区域与最终结果对比</div>
+        </div>
+
+        <div class="section-content">
+          <el-row :gutter="18" class="image-row">
+            <el-col :xs="24" :sm="12" v-if="analysisResult.crop_image">
+              <el-card class="image-card">
+                <div class="image-title">裁剪图片</div>
+                <img :src="getImageUrl(analysisResult.crop_image)" alt="裁剪图片" class="result-img" @click="openPreview(getImageUrl(analysisResult.crop_image))" />
+              </el-card>
+            </el-col>
+            <el-col :xs="24" :sm="12" v-if="analysisResult.result_image">
+              <el-card class="image-card">
+                <div class="image-title">结果图片</div>
+                <img :src="getImageUrl(analysisResult.result_image)" alt="结果图片" class="result-img" @click="openPreview(getImageUrl(analysisResult.result_image))" />
+              </el-card>
+            </el-col>
+          </el-row>
+        </div>
+      </div>
+    </div>
+
+    <!-- 旧的整体分析区（禁用，避免空结构报错） -->
+    <div v-if="analysisResult && analysisResult.results" class="data-analysis-section">
       <div class="section-header">
         <h2>数据分析</h2>
         <el-button 
@@ -488,7 +581,7 @@ import { ref, reactive, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElLoading, ElDialog } from 'element-plus'
 import { Upload, InfoFilled, Delete, DataAnalysis, Search, PieChart, TrendCharts, CopyDocument, Histogram, RefreshRight, ZoomIn } from '@element-plus/icons-vue'
-import {cornAllAnalyzer} from '@/api/corn'
+import {cornTopColor} from '@/api/corn'
 
 const router = useRouter()
 const fileInput = ref(null)
@@ -636,7 +729,7 @@ const submitImage = async () => {
   })
 
   try {
-    const response = await cornAllAnalyzer(uploadedFile.value)
+    const response = await cornTopColor(uploadedFile.value)
 
     if (response.code === 200) {
       analysisResult.value = response.data
@@ -803,6 +896,21 @@ const copyLabData = () => {
   dataText += `复制时间: ${new Date().toLocaleString('zh-CN')}`
   
   copyToClipboard(dataText, 'LAB分析数据复制成功')
+}
+
+// 复制顶部颜色数据
+const copyTopColorData = () => {
+  if (!analysisResult.value) return
+
+  const L = analysisResult.value.L_mean
+  const A = analysisResult.value.A_mean
+  const B = analysisResult.value.B_mean
+  const crop = analysisResult.value.crop_image
+  const result = analysisResult.value.result_image
+
+  const dataText = `顶部颜色 LAB 均值\n\nL: ${Number(L).toFixed(2)}\nA: ${Number(A).toFixed(2)}\nB: ${Number(B).toFixed(2)}\n\n裁剪图片: ${crop ? getImageUrl(crop) : '--'}\n结果图片: ${result ? getImageUrl(result) : '--'}\n\n复制时间: ${new Date().toLocaleString('zh-CN')}`
+
+  copyToClipboard(dataText, '顶部颜色数据复制成功')
 }
 
 // 通用复制到剪贴板方法
