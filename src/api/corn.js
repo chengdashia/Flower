@@ -87,3 +87,16 @@ export const cornGrade = (file) => {
   })
 }
 
+export const cornLengthWidth = (file) => {
+  const formData = new FormData()
+  formData.append('image', file)
+
+  return request.post({
+    url: 'corn_lw/measure',
+    data: formData,
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  })
+}
+
