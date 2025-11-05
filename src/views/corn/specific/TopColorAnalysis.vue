@@ -34,6 +34,144 @@
           </div>
         </div>
       </div>
+      
+      <!-- 分析结果区域（初始化即展示，占位显示） -->
+      <div class="result-section">
+        <div class="section-header">
+          <h2>分析结果</h2>
+          <el-button 
+            type="primary" 
+            @click="copyTopColorData"
+            :icon="CopyDocument"
+            size="small"
+            :disabled="!analysisResult"
+          >
+            复制结果
+          </el-button>
+        </div>
+
+        <!-- 顶部颜色 LAB 均值 -->
+        <div class="data-section">
+          <div class="section-title-wrapper">
+            <div class="section-icon">
+              <el-icon><Histogram /></el-icon>
+            </div>
+            <h3 class="section-title">LAB 均值</h3>
+            <div class="section-description">顶部区域的 L/A/B 三通道均值</div>
+          </div>
+
+          <div class="section-content">
+            <el-row :gutter="20">
+              <el-col :xs="24" :sm="8">
+                <div class="info-card lab-card">
+                  <div class="card-header">
+                    <el-icon><DataAnalysis /></el-icon>
+                    <span>L_mean</span>
+                  </div>
+                  <div class="card-content">
+                    <div class="info-item">
+                      <div class="info-label">亮度 L</div>
+                      <div class="info-value lab-value">{{ analysisResult ? formatNumber(analysisResult.L_mean) : '--' }}</div>
+                    </div>
+                    <div class="progress-container">
+                      <div class="progress-bar">
+                        <div 
+                          class="progress-fill" 
+                          :style="{ 
+                            width: analysisResult ? getProgressWidth('L', analysisResult.L_mean) + '%' : '0%',
+                            backgroundColor: '#333333'
+                          }"
+                        ></div>
+                      </div>
+                      <div class="progress-info">0-100</div>
+                    </div>
+                  </div>
+                </div>
+              </el-col>
+              <el-col :xs="24" :sm="8">
+                <div class="info-card lab-card">
+                  <div class="card-header">
+                    <el-icon><DataAnalysis /></el-icon>
+                    <span>A_mean</span>
+                  </div>
+                  <div class="card-content">
+                    <div class="info-item">
+                      <div class="info-label">红绿轴 A</div>
+                      <div class="info-value lab-value">{{ analysisResult ? formatNumber(analysisResult.A_mean) : '--' }}</div>
+                    </div>
+                    <div class="progress-container">
+                      <div class="progress-bar">
+                        <div 
+                          class="progress-fill" 
+                          :style="{ 
+                            width: analysisResult ? getProgressWidth('A', analysisResult.A_mean) + '%' : '50%',
+                            backgroundColor: '#ff5252'
+                          }"
+                        ></div>
+                      </div>
+                      <div class="progress-info">-128 到 +127</div>
+                    </div>
+                  </div>
+                </div>
+              </el-col>
+              <el-col :xs="24" :sm="8">
+                <div class="info-card lab-card">
+                  <div class="card-header">
+                    <el-icon><DataAnalysis /></el-icon>
+                    <span>B_mean</span>
+                  </div>
+                  <div class="card-content">
+                    <div class="info-item">
+                      <div class="info-label">蓝黄轴 B</div>
+                      <div class="info-value lab-value">{{ analysisResult ? formatNumber(analysisResult.B_mean) : '--' }}</div>
+                    </div>
+                    <div class="progress-container">
+                      <div class="progress-bar">
+                        <div 
+                          class="progress-fill" 
+                          :style="{ 
+                            width: analysisResult ? getProgressWidth('B', analysisResult.B_mean) + '%' : '50%',
+                            backgroundColor: '#2196f3'
+                          }"
+                        ></div>
+                      </div>
+                      <div class="progress-info">-128 到 +127</div>
+                    </div>
+                  </div>
+                </div>
+              </el-col>
+            </el-row>
+          </div>
+        </div>
+
+        <!-- 分析图片 -->
+        <div class="data-section">
+          <div class="section-title-wrapper">
+            <div class="section-icon">
+              <el-icon><DataAnalysis /></el-icon>
+            </div>
+            <h3 class="section-title">分析图片</h3>
+            <div class="section-description">裁剪区域与最终结果对比</div>
+          </div>
+
+          <div class="section-content">
+            <el-row :gutter="18" class="image-row">
+              <el-col :xs="24" :sm="12" v-if="analysisResult && analysisResult.crop_image">
+                <el-card class="image-card">
+                  <div class="image-title">裁剪图片</div>
+                  <img :src="getImageUrl(analysisResult.crop_image)" alt="裁剪图片" class="result-img" @click="openPreview(getImageUrl(analysisResult.crop_image))" />
+                </el-card>
+              </el-col>
+              <el-col :xs="24" :sm="12" v-if="analysisResult && analysisResult.result_image">
+                <el-card class="image-card">
+                  <div class="image-title">结果图片</div>
+                  <img :src="getImageUrl(analysisResult.result_image)" alt="结果图片" class="result-img" @click="openPreview(getImageUrl(analysisResult.result_image))" />
+                </el-card>
+              </el-col>
+            </el-row>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- 识别按钮 -->
@@ -49,98 +187,6 @@
       </el-button>
     </div>
 
-    <!-- 顶部颜色分析结果展示 -->
-    <div v-if="analysisResult && (analysisResult.L_mean !== undefined || analysisResult.A_mean !== undefined || analysisResult.B_mean !== undefined)" class="data-analysis-section">
-      <div class="section-header">
-        <h2>顶部颜色 LAB 均值</h2>
-        <el-button 
-          type="primary" 
-          @click="copyTopColorData"
-          :icon="CopyDocument"
-          size="large"
-        >
-          一键复制数据
-        </el-button>
-      </div>
-
-      <div class="data-section">
-        <div class="section-title-wrapper">
-          <div class="section-icon">
-            <el-icon><Histogram /></el-icon>
-          </div>
-          <h3 class="section-title">LAB 均值</h3>
-          <div class="section-description">顶部区域的 L/A/B 三通道均值</div>
-        </div>
-
-        <div class="section-content">
-          <el-row :gutter="25">
-            <el-col :xs="24" :sm="8" :md="8">
-              <div class="info-card">
-                <div class="card-header">
-                  <el-icon><Histogram /></el-icon>
-                  <span>亮度 L</span>
-                </div>
-                <div class="card-content">
-                  <div class="lab-value"><span class="lab-label">L:</span><span class="lab-number">{{ Number(analysisResult.L_mean).toFixed(2) }}</span></div>
-                  <div class="progress-bar"><div class="progress" :style="{ width: getLabProgressWidth('L', analysisResult.L_mean) + '%', backgroundColor: getLabColorForChannel('L') }"></div></div>
-                </div>
-              </div>
-            </el-col>
-            <el-col :xs="24" :sm="8" :md="8">
-              <div class="info-card">
-                <div class="card-header">
-                  <el-icon><Histogram /></el-icon>
-                  <span>红绿轴 A</span>
-                </div>
-                <div class="card-content">
-                  <div class="lab-value"><span class="lab-label">A:</span><span class="lab-number">{{ Number(analysisResult.A_mean).toFixed(2) }}</span></div>
-                  <div class="progress-bar"><div class="progress" :style="{ width: getLabProgressWidth('A', analysisResult.A_mean) + '%', backgroundColor: getLabColorForChannel('A') }"></div></div>
-                </div>
-              </div>
-            </el-col>
-            <el-col :xs="24" :sm="8" :md="8">
-              <div class="info-card">
-                <div class="card-header">
-                  <el-icon><Histogram /></el-icon>
-                  <span>蓝黄轴 B</span>
-                </div>
-                <div class="card-content">
-                  <div class="lab-value"><span class="lab-label">B:</span><span class="lab-number">{{ Number(analysisResult.B_mean).toFixed(2) }}</span></div>
-                  <div class="progress-bar"><div class="progress" :style="{ width: getLabProgressWidth('B', analysisResult.B_mean) + '%', backgroundColor: getLabColorForChannel('B') }"></div></div>
-                </div>
-              </div>
-            </el-col>
-          </el-row>
-        </div>
-      </div>
-
-      <div class="data-section">
-        <div class="section-title-wrapper">
-          <div class="section-icon">
-            <el-icon><DataAnalysis /></el-icon>
-          </div>
-          <h3 class="section-title">分析图片</h3>
-          <div class="section-description">裁剪区域与最终结果对比</div>
-        </div>
-
-        <div class="section-content">
-          <el-row :gutter="18" class="image-row">
-            <el-col :xs="24" :sm="12" v-if="analysisResult.crop_image">
-              <el-card class="image-card">
-                <div class="image-title">裁剪图片</div>
-                <img :src="getImageUrl(analysisResult.crop_image)" alt="裁剪图片" class="result-img" @click="openPreview(getImageUrl(analysisResult.crop_image))" />
-              </el-card>
-            </el-col>
-            <el-col :xs="24" :sm="12" v-if="analysisResult.result_image">
-              <el-card class="image-card">
-                <div class="image-title">结果图片</div>
-                <img :src="getImageUrl(analysisResult.result_image)" alt="结果图片" class="result-img" @click="openPreview(getImageUrl(analysisResult.result_image))" />
-              </el-card>
-            </el-col>
-          </el-row>
-        </div>
-      </div>
-    </div>
 
     <!-- 旧的整体分析区（禁用，避免空结构报错） -->
     <div v-if="analysisResult && analysisResult.results" class="data-analysis-section">
@@ -913,6 +959,31 @@ const copyTopColorData = () => {
   copyToClipboard(dataText, '顶部颜色数据复制成功')
 }
 
+// 格式化数字显示
+const formatNumber = (n) => {
+  if (n === null || n === undefined || Number.isNaN(Number(n))) return '--'
+  return Number(n).toFixed(2)
+}
+
+// 获取进度条宽度
+const getProgressWidth = (channel, value) => {
+  // 根据不同通道设置不同的最大值
+  const maxValues = {
+    'L': 100, // L 通道范围通常为 0-100
+    'A': 128, // a* 通道范围通常为 -128 到 +127
+    'B': 128  // b* 通道范围通常为 -128 到 +127
+  }
+  
+  // 对于 A 和 B 通道，需要将负值转换为正值的百分比
+  if (channel === 'A' || channel === 'B') {
+    // 将 -128 到 +127 映射到 0-100%
+    return ((Number(value) + 128) / 256) * 100
+  } else {
+    // L 通道直接计算百分比
+    return (Number(value) / maxValues[channel]) * 100
+  }
+}
+
 // 通用复制到剪贴板方法
 const copyToClipboard = (text, successMessage) => {
   if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -944,37 +1015,7 @@ const copyToClipboard = (text, successMessage) => {
   }
 }
 
-// LAB 卡片相关方法，参考 LeafSheathFileTraitFile.vue
-const getLabProgressWidth = (channel, value) => {
-  const maxValues = {
-    'L': 100,
-    'A': 128,
-    'B': 128
-  }
-  if (channel === 'A' || channel === 'B') {
-    return ((value + 128) / 256) * 100
-  } else {
-    return (value / maxValues[channel]) * 100
-  }
-}
 
-const getLabColorForChannel = (channel) => {
-  const colors = {
-    'L': '#333333',
-    'A': '#ff5252',
-    'B': '#2196f3'
-  }
-  return colors[channel] || '#409EFF'
-}
-
-const getLabChannelDescription = (channel) => {
-  const descriptions = {
-    'L': '亮度 (0-100)',
-    'A': '红绿轴 (-128 到 +127)',
-    'B': '蓝黄轴 (-128 到 +127)'
-  }
-  return descriptions[channel] || ''
-}
 
 onMounted(() => {
   window.addEventListener('mousemove', onPreviewMouseMove)
@@ -1031,7 +1072,7 @@ onBeforeUnmount(() => {
 }
 
 .upload-section {
-  flex: 1;  /* 上传区域占满宽度 */
+  flex: 1;
   display: flex;
   flex-direction: column;
   background-color: #ffffff;
@@ -1039,7 +1080,8 @@ onBeforeUnmount(() => {
   overflow: hidden;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
   transition: all 0.3s ease;
-  width: 100%;
+  min-width: 300px;
+  max-width: 500px;
 }
 
 .upload-section:hover {
@@ -1096,6 +1138,110 @@ onBeforeUnmount(() => {
   text-align: center;
   padding: 20px;
   width: 100%;
+}
+
+/* 分析结果区域样式 */
+.result-section {
+  flex: 2;
+  display: flex;
+  flex-direction: column;
+  background-color: #ffffff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+  min-width: 400px;
+}
+
+.result-section:hover {
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+  transform: translateY(-2px);
+}
+
+.result-section .section-header {
+  padding: 15px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #ebeef5;
+  background: linear-gradient(to right, #f0f9eb, #ecf5ff);
+}
+
+.result-section .section-header h2 {
+  font-size: 20px;
+  font-weight: 700;
+  color: #303133;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.result-section .section-header h2::before {
+  content: '';
+  width: 3px;
+  height: 20px;
+  background: linear-gradient(135deg, #409eff, #67c23a);
+  border-radius: 2px;
+}
+
+.result-section .data-section {
+  margin: 20px;
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+  border: 1px solid #ebeef5;
+}
+
+.result-section .section-title-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 15px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #f0f2f5;
+  flex-wrap: wrap;
+}
+
+.result-section .section-icon {
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, #409eff, #67c23a);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 3px 10px rgba(64, 158, 255, 0.3);
+}
+
+.result-section .section-icon .el-icon {
+  font-size: 20px;
+  color: white;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+}
+
+.result-section .section-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #303133;
+  margin: 0;
+}
+
+.result-section .section-description {
+  font-size: 13px;
+  color: #909399;
+  margin-left: 52px;
+  margin-top: -15px;
+  flex: 1;
+}
+
+.result-section .section-content {
+  padding: 0;
+  background-color: transparent;
+  border-radius: 0;
+  box-shadow: none;
 }
 
 .upload-icon {
@@ -1474,11 +1620,51 @@ onBeforeUnmount(() => {
   font-weight: 500;
 }
 
-.info-value {
-  font-size: 16px;
-  font-weight: 700;
-  color: #409eff;
-  font-family: 'Courier New', monospace;
+.info-value { 
+  font-size: 18px; 
+  font-weight: 700; 
+  color: #409eff; 
+  font-family: 'Courier New', monospace; 
+}
+
+/* LAB值特殊样式 */
+.lab-card {
+  background: linear-gradient(135deg, #ffffff 0%, #f0f7ff 100%);
+}
+
+.lab-value {
+  font-size: 24px !important;
+  font-weight: 800 !important;
+  color: #303133 !important;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.progress-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 10px;
+  background-color: #ebeef5;
+  border-radius: 5px;
+  overflow: hidden;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: 5px;
+  transition: width 0.5s ease, background-color 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+.progress-info {
+  font-size: 12px;
+  color: #909399;
+  text-align: right;
 }
 
 .info-value.shape-type {
@@ -2081,33 +2267,7 @@ onBeforeUnmount(() => {
   gap: 12px;
 }
 
-.progress-bar {
-  flex: 1;
-  height: 20px;
-  background: linear-gradient(135deg, #f5f7fa 0%, #e4e7ed 100%);
-  border-radius: 10px;
-  overflow: hidden;
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
-}
 
-.progress-fill {
-  height: 100%;
-  background: linear-gradient(90deg, #e6a23c, #f56c6c);
-  border-radius: 10px;
-  transition: width 1s ease;
-  position: relative;
-}
-
-.progress-fill::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
-  animation: shimmer 2s infinite;
-}
 
 .ratio-value {
   font-size: 13px;

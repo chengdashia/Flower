@@ -6,6 +6,7 @@
     </div>
 
     <div class="content-wrapper">
+      <!-- 图片上传区域 -->
       <div class="upload-section">
         <div class="section-title">
           <el-icon><Upload /></el-icon>
@@ -34,6 +35,57 @@
           </div>
         </div>
       </div>
+
+      <!-- 分析结果区域 -->
+      <div class="result-section">
+        <div class="section-header">
+          <h2>分析结果</h2>
+          <el-button 
+            type="primary" 
+            @click="copyGradeResult"
+            :icon="CopyDocument"
+            size="small"
+            :disabled="!analysisResult"
+          >
+            复制结果
+          </el-button>
+        </div>
+
+        <!-- 分级结果展示 -->
+        <div class="data-section">
+          <div class="section-title-wrapper">
+            <div class="section-icon">
+              <el-icon><DataAnalysis /></el-icon>
+            </div>
+            <h3 class="section-title">外观等级</h3>
+            <div class="section-description">玉米外观等级分析结果</div>
+          </div>
+          
+          <div class="section-content">
+            <div class="grade-result">
+              <div class="grade-display-container">
+                <div class="grade-display">
+                  <div class="grade-label">外观等级</div>
+                  <div class="grade-value">{{ analysisResult ? (analysisResult.grade || '未分级') : '未分级' }}</div>
+                </div>
+                <div class="grade-visualization">
+                  <div class="grade-indicator" :class="getGradeClass(analysisResult ? analysisResult.grade : null)">
+                    {{ analysisResult ? (analysisResult.grade || '未分级') : '未分级' }}
+                  </div>
+                </div>
+              </div>
+              <div class="message-display" v-if="analysisResult && analysisResult.message">
+                <div class="message-label">分析信息</div>
+                <div class="message-value">{{ analysisResult.message }}</div>
+              </div>
+              <div class="message-display" v-else>
+                <div class="message-label">分析信息</div>
+                <div class="message-value">暂无分析信息</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- 识别按钮 -->
@@ -47,57 +99,6 @@
         <el-icon class="button-icon"><Search /></el-icon>
         <span>{{ isLoading ? '识别中...' : '开始识别' }}</span>
       </el-button>
-    </div>
-
-    <!-- 数据统计和图表区域 -->
-    <div v-if="analysisResult" class="data-analysis-section">
-      <div class="section-header">
-        <h2>分析结果</h2>
-      </div>
-
-      <!-- 分级结果展示 -->
-      <div class="data-section">
-        <div class="section-title-wrapper">
-          <div class="section-icon">
-            <el-icon><DataAnalysis /></el-icon>
-          </div>
-          <h3 class="section-title">外观等级</h3>
-          <div class="section-description">玉米外观等级分析结果</div>
-        </div>
-        
-        <div class="section-content">
-          <div class="grade-result">
-            <div class="grade-display">
-              <span class="grade-label">等级:</span>
-              <span class="grade-value">{{ analysisResult.grade || '未分级' }}</span>
-            </div>
-            <div class="message-display" v-if="analysisResult.message">
-              <span class="message-label">信息:</span>
-              <span class="message-value">{{ analysisResult.message }}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- 操作按钮 -->
-      <div class="action-buttons">
-        <el-button 
-          type="primary" 
-          @click="copyGradeResult"
-          :icon="CopyDocument"
-          size="large"
-        >
-          复制结果
-        </el-button>
-        <el-button 
-          type="success" 
-          @click="resetAnalysis"
-          :icon="RefreshRight"
-          size="large"
-        >
-          重新分析
-        </el-button>
-      </div>
     </div>
 
     <!-- 错误信息展示 -->
@@ -132,8 +133,6 @@
         </el-button>
       </div>
     </div>
-
-    <!-- 已移除预览功能 -->
   </div>
 </template>
 
@@ -297,6 +296,21 @@ ${midlineWidths.map((width, index) => `- 位置${index + 1}: ${width} px`).join(
   copyToClipboard(dataText, '中线宽度数据复制成功')
 }
 
+// 获取等级样式类
+const getGradeClass = (grade) => {
+  if (!grade || grade === '未分级') return 'grade-default'
+  
+  const gradeMap = {
+    '一等': 'grade-one',
+    '二等': 'grade-two',
+    '三等': 'grade-three',
+    '四等': 'grade-four',
+    '五等': 'grade-five'
+  }
+  
+  return gradeMap[grade] || 'grade-default'
+}
+
 // 通用复制到剪贴板方法
 const copyToClipboard = (text, successMessage) => {
   if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -372,13 +386,13 @@ onBeforeUnmount(() => {
 
 .content-wrapper {
   display: flex;
-  flex: 1;
   gap: 25px;
   margin-bottom: 25px;
 }
 
+/* 图片上传区域样式 */
 .upload-section {
-  flex: 1;  /* 上传区域占满宽度 */
+  flex: 1;
   display: flex;
   flex-direction: column;
   background-color: #ffffff;
@@ -386,7 +400,8 @@ onBeforeUnmount(() => {
   overflow: hidden;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
   transition: all 0.3s ease;
-  width: 100%;
+  min-width: 300px;
+  max-width: 500px;
 }
 
 .upload-section:hover {
@@ -524,31 +539,35 @@ onBeforeUnmount(() => {
   transform: translateY(0);
 }
 
-.data-analysis-section {
-  margin-top: 30px;
-  padding: 25px;
+/* 分析结果区域样式 */
+.result-section {
+  flex: 2;
+  display: flex;
+  flex-direction: column;
   background-color: #ffffff;
-  border-radius: 16px;
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
   transition: all 0.3s ease;
+  min-width: 400px;
 }
 
-.data-analysis-section:hover {
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+.result-section:hover {
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
   transform: translateY(-2px);
 }
 
-.section-header {
+.result-section .section-header {
+  padding: 15px 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 25px;
-  padding-bottom: 15px;
-  border-bottom: 2px solid #f0f2f5;
+  border-bottom: 1px solid #ebeef5;
+  background: linear-gradient(to right, #f0f9eb, #ecf5ff);
 }
 
-.section-header h2 {
-  font-size: 24px;
+.result-section .section-header h2 {
+  font-size: 20px;
   font-weight: 700;
   color: #303133;
   margin: 0;
@@ -557,399 +576,196 @@ onBeforeUnmount(() => {
   gap: 10px;
 }
 
-.section-header h2::before {
+.result-section .section-header h2::before {
   content: '';
-  width: 4px;
-  height: 24px;
+  width: 3px;
+  height: 20px;
   background: linear-gradient(135deg, #409eff, #67c23a);
   border-radius: 2px;
 }
 
-.data-section {
-  margin-bottom: 35px;
+.result-section .data-section {
+  margin: 20px;
   background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
-  border-radius: 16px;
-  padding: 25px;
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
   transition: all 0.3s ease;
   border: 1px solid #ebeef5;
 }
 
-.data-section:hover {
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
-  transform: translateY(-2px);
-}
-
-.section-title-wrapper {
+.result-section .section-title-wrapper {
   display: flex;
   align-items: center;
-  gap: 15px;
-  margin-bottom: 20px;
-  padding-bottom: 15px;
-  border-bottom: 2px solid #f0f2f5;
+  gap: 12px;
+  margin-bottom: 15px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #f0f2f5;
   flex-wrap: wrap;
 }
 
-.section-icon {
-  width: 50px;
-  height: 50px;
+.result-section .section-icon {
+  width: 40px;
+  height: 40px;
   background: linear-gradient(135deg, #409eff, #67c23a);
-  border-radius: 12px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 12px rgba(64, 158, 255, 0.3);
+  box-shadow: 0 3px 10px rgba(64, 158, 255, 0.3);
 }
 
-.section-icon .el-icon {
-  font-size: 24px;
+.result-section .section-icon .el-icon {
+  font-size: 20px;
   color: white;
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
 }
 
-.section-title {
-  font-size: 22px;
+.result-section .section-title {
+  font-size: 18px;
   font-weight: 700;
   color: #303133;
   margin: 0;
 }
 
-.section-description {
-  font-size: 14px;
+.result-section .section-description {
+  font-size: 13px;
   color: #909399;
-  margin-left: 65px;
+  margin-left: 52px;
   margin-top: -15px;
   flex: 1;
 }
 
-.section-content {
+.result-section .section-content {
   padding: 0;
   background-color: transparent;
   border-radius: 0;
   box-shadow: none;
 }
 
-.chart-card {
-  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
-  border-radius: 12px;
-  padding: 20px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-  border: 1px solid #ebeef5;
-  transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
+.grade-result {
+  padding: 20px 0;
+}
+
+.grade-display-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 25px;
   margin-bottom: 25px;
 }
 
-.chart-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: linear-gradient(90deg, #409eff, #67c23a, #e6a23c);
-  border-radius: 12px 12px 0 0;
+.grade-display {
+  text-align: center;
 }
 
-.chart-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-}
-
-.chart-title {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 20px;
+.grade-label {
   font-size: 18px;
-  font-weight: 600;
-  color: #303133;
-}
-
-.chart-title .el-icon {
-  font-size: 22px;
-  color: #409eff;
-  filter: drop-shadow(0 2px 4px rgba(64, 158, 255, 0.3));
-}
-
-.chart-content {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-}
-
-.measurement-cards {
-  margin-bottom: 0;
-}
-
-.measurement-card {
-  padding: 20px;
-  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
-  border-radius: 12px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-  margin-bottom: 15px;
-  border: 1px solid #ebeef5;
-  transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
-}
-
-.measurement-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: linear-gradient(90deg, #409eff, #67c23a);
-  border-radius: 12px 12px 0 0;
-}
-
-.measurement-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
-}
-
-.segment-number {
-  font-size: 18px;
-  font-weight: 700;
-  color: #303133;
-  background: linear-gradient(135deg, #409eff, #67c23a);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.measurement-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 0;
-  border-bottom: 1px solid rgba(64, 158, 255, 0.1);
-}
-
-.measurement-item:last-child {
-  border-bottom: none;
-}
-
-.measurement-label {
-  font-size: 14px;
   color: #606266;
-  font-weight: 500;
-}
-
-.measurement-value {
-  font-size: 16px;
-  font-weight: 700;
-  color: #409eff;
-  font-family: 'Courier New', monospace;
-  background-color: rgba(64, 158, 255, 0.1);
-  padding: 4px 8px;
-  border-radius: 4px;
-}
-
-.info-card {
-  padding: 20px;
-  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
-  border-radius: 12px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-  border: 1px solid #ebeef5;
-  transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
-  height: 100%;
-}
-
-.info-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: linear-gradient(90deg, #409eff, #67c23a, #e6a23c);
-  border-radius: 12px 12px 0 0;
-}
-
-.info-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
-}
-
-.info-card .card-header {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 15px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid #ebeef5;
-}
-
-.info-card .card-header .el-icon {
-  font-size: 20px;
-  color: #409eff;
-}
-
-.info-card .card-header span {
-  font-size: 16px;
-  font-weight: 600;
-  color: #303133;
-}
-
-.info-card .card-content {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.info-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 0;
-  border-bottom: 1px solid rgba(64, 158, 255, 0.1);
-}
-
-.info-item:last-child {
-  border-bottom: none;
-}
-
-.info-label {
-  font-size: 14px;
-  color: #606266;
-  font-weight: 500;
-}
-
-.info-value {
-  font-size: 16px;
-  font-weight: 700;
-  color: #409eff;
-  font-family: 'Courier New', monospace;
-}
-
-.info-value.shape-type {
-  background: linear-gradient(135deg, #409eff, #67c23a);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  font-weight: 700;
-}
-
-.info-value.confidence {
-  color: #67c23a;
-  background-color: rgba(103, 194, 58, 0.1);
-  padding: 4px 8px;
-  border-radius: 4px;
-}
-
-.measurement-card .card-content {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.measurement-card .card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
   margin-bottom: 10px;
+  font-weight: 500;
 }
 
-.width-summary {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 15px;
-  padding: 12px;
-  background-color: rgba(64, 158, 255, 0.05);
-  border-radius: 8px;
-  border: 1px solid rgba(64, 158, 255, 0.1);
-}
-
-.summary-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-}
-
-.summary-label {
-  font-size: 12px;
+.grade-value {
+  font-size: 20px;
   color: #606266;
   font-weight: 500;
-  margin-bottom: 4px;
 }
 
-.summary-value {
-  font-size: 16px;
-  font-weight: 700;
-  color: #409eff;
-  font-family: 'Courier New', monospace;
-}
-
-.analysis-images {
-  margin-top: 25px;
-  padding-top: 20px;
-  border-top: 2px solid #f0f2f5;
-}
-
-.images-title {
+.grade-visualization {
+  width: 100%;
   display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 15px;
-  font-size: 18px;
-  font-weight: 600;
-  color: #303133;
+  justify-content: center;
 }
 
-.images-title .el-icon {
-  font-size: 20px;
-  color: #409eff;
-}
-
-.images-grid {
-  margin-bottom: 0;
-}
-
-.image-row {
-  margin-bottom: 0;
-}
-
-.image-card {
-  border-radius: 10px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-  margin-bottom: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-}
-
-.image-title {
+.grade-indicator {
+  font-size: 72px;
+  font-weight: 800;
   text-align: center;
-  font-size: 15px;
+  min-width: 200px;
+  padding: 30px 50px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #f5f7fa 0%, #e4e7ed 100%);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  border: 2px solid #ebeef5;
+}
+
+.grade-indicator::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #409eff, #67c23a);
+  border-radius: 16px 16px 0 0;
+}
+
+.grade-indicator.grade-one {
+  background: linear-gradient(135deg, #ecf5ff 0%, #d9ecff 100%);
+  border-color: #b3d9ff;
+  color: #409eff;
+  text-shadow: 0 2px 4px rgba(64, 158, 255, 0.3);
+}
+
+.grade-indicator.grade-two {
+  background: linear-gradient(135deg, #f0f9eb 0%, #e1f3d8 100%);
+  border-color: #b3e19d;
+  color: #67c23a;
+  text-shadow: 0 2px 4px rgba(103, 194, 58, 0.3);
+}
+
+.grade-indicator.grade-three {
+  background: linear-gradient(135deg, #fdf6ec 0%, #fcecd4 100%);
+  border-color: #f3d19e;
+  color: #e6a23c;
+  text-shadow: 0 2px 4px rgba(230, 162, 60, 0.3);
+}
+
+.grade-indicator.grade-four {
+  background: linear-gradient(135deg, #fdf2ed 0%, #f9e2d4 100%);
+  border-color: #f3ba9e;
+  color: #f56c6c;
+  text-shadow: 0 2px 4px rgba(245, 108, 108, 0.3);
+}
+
+.grade-indicator.grade-five {
+  background: linear-gradient(135deg, #f4f4f5 0%, #e9e9eb 100%);
+  border-color: #c9c9cc;
+  color: #909399;
+  text-shadow: 0 2px 4px rgba(144, 147, 153, 0.3);
+}
+
+.grade-indicator.grade-default {
+  background: linear-gradient(135deg, #f5f7fa 0%, #e4e7ed 100%);
+  border-color: #d4d7de;
+  color: #a8abb2;
+  text-shadow: 0 2px 4px rgba(168, 171, 178, 0.3);
+}
+
+.message-display {
+  background-color: rgba(103, 194, 58, 0.1);
+  border-radius: 10px;
+  padding: 20px;
+  border: 1px solid rgba(103, 194, 58, 0.2);
+  text-align: center;
+}
+
+.message-label {
+  font-size: 16px;
+  color: #606266;
   font-weight: 600;
-  color: #303133;
   margin-bottom: 8px;
-  margin-top: 4px;
+  display: block;
 }
 
-.result-img {
-  max-height: 180px;
-  width: auto;
-  max-width: 100%;
-  object-fit: contain;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.10);
-  cursor: pointer;
-  transition: transform 0.2s;
-}
-
-.result-img:hover {
-  transform: scale(1.04);
-  box-shadow: 0 4px 16px rgba(64,158,255,0.18);
+.message-value {
+  font-size: 16px;
+  color: #67c23a;
+  font-weight: 500;
 }
 
 .action-buttons {
@@ -1014,569 +830,18 @@ onBeforeUnmount(() => {
   font-size: 20px;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 992px) {
   .content-wrapper {
     flex-direction: column;
-    gap: 20px;
   }
-
-  .upload-section, .result-section {
-    flex: 1;
+  
+  .upload-section,
+  .result-section {
+    max-width: 100%;
   }
-
-  .image-grid {
-    flex-direction: column;
-    gap: 15px;
+  
+  .upload-section {
+    margin-bottom: 20px;
   }
-
-  .image-item img {
-    max-height: 200px;
-  }
-
-  .data-analysis-section {
-    padding: 20px;
-    margin-top: 20px;
-  }
-
-  .section-header {
-    flex-direction: column;
-    gap: 15px;
-    align-items: flex-start;
-  }
-
-  .section-header h2 {
-    font-size: 20px;
-  }
-
-  .data-section {
-    padding: 20px;
-    margin-bottom: 25px;
-  }
-
-  .section-title-wrapper {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 10px;
-  }
-
-  .section-icon {
-    width: 40px;
-    height: 40px;
-  }
-
-  .section-icon .el-icon {
-    font-size: 20px;
-  }
-
-  .section-title {
-    font-size: 18px;
-  }
-
-  .section-description {
-    margin-left: 0;
-    margin-top: 0;
-  }
-
-  .measurement-card {
-    padding: 15px;
-  }
-
-  .info-card {
-    padding: 15px;
-    margin-bottom: 15px;
-  }
-
-  .width-summary {
-    flex-direction: column;
-    gap: 10px;
-  }
-
-  .summary-item {
-    width: 100%;
-    flex-direction: row;
-    justify-content: space-between;
-  }
-
-  .width-chart {
-    gap: 10px;
-  }
-
-  .width-bar {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
-  }
-
-  .bar-label {
-    min-width: auto;
-  }
-
-  .bar-container {
-    width: 100%;
-  }
-
-  .ratio-chart {
-    gap: 12px;
-  }
-
-  .ratio-item {
-    gap: 6px;
-  }
-
-  .ratio-progress {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
-  }
-
-  .progress-bar {
-    width: 100%;
-  }
-
-  .ratio-value {
-    min-width: auto;
-    text-align: left;
-  }
-
-  .image-row {
-    flex-direction: column;
-    gap: 10px;
-  }
-
-  .image-card {
-    margin-bottom: 10px;
-  }
-
-  .result-img {
-    max-height: 120px;
-  }
-
-  .chart-card {
-    margin-bottom: 15px;
-  }
-
-  .lab-charts {
-    margin-bottom: 15px;
-  }
-
-  .lab-card {
-    padding: 10px;
-    margin-bottom: 10px;
-  }
-
-  .lab-value {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
-  }
-
-  .lab-label {
-    font-size: 14px;
-  }
-
-  .lab-number {
-    font-size: 14px;
-  }
-
-  .chart-title {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
-  }
-
-  .chart-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
-  }
-
-  /* 移动端表格样式 */
-  .measurement-table {
-    font-size: 12px;
-  }
-
-  .measurement-table :deep(.el-table__header th) {
-    font-size: 12px;
-    padding: 8px 4px;
-  }
-
-  .measurement-table :deep(.el-table__body td) {
-    padding: 8px 4px;
-  }
-
-  .table-value {
-    font-size: 12px;
-    padding: 2px 6px;
-  }
-
-  .segment-badge {
-    font-size: 11px;
-    padding: 4px 8px;
-  }
-}
-
-.custom-preview-dialog .el-dialog {
-  border-radius: 16px;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.18);
-  background: linear-gradient(135deg, #fff 80%, #f5f7fa 100%);
-}
-
-.custom-preview-dialog .el-dialog__body {
-  padding: 0 0 24px 0;
-}
-
-.preview-img-wrapper {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 400px;
-  background: #f6f8fa;
-  border-radius: 12px;
-  padding: 0;
-  height: 700px;
-}
-
-.preview-img-scroll {
-  width: 100%;
-  height: 100%;
-  max-width: 850px;
-  max-height: 700px;
-  overflow: auto;
-  background: #f6f8fa;
-  border-radius: 12px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  box-sizing: border-box;
-}
-
-.preview-img-scroll img {
-  display: block;
-  margin: auto;
-}
-
-/* 完全复用 LeafSheathFileTraitFile.vue 的 lab-card 相关样式 */
-.lab-charts {
-  margin-bottom: 25px;
-}
-.chart-header {
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
-  margin-bottom: 20px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid #ebeef5;
-}
-.chart-header h3 {
-  margin: 0;
-  font-size: 18px;
-  color: #303133;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.lab-card {
-  margin-bottom: 15px;
-  border-radius: 8px;
-  transition: all 0.3s;
-  border: 1px solid #ebeef5;
-  overflow: hidden;
-}
-.lab-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
-}
-.lab-value {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 10px;
-  align-items: center;
-}
-.lab-label {
-  font-weight: bold;
-  color: #303133;
-  font-size: 15px;
-}
-.lab-number {
-  font-family: 'Courier New', monospace;
-  font-size: 16px;
-  color: #409eff;
-  font-weight: 600;
-  background-color: rgba(64, 158, 255, 0.1);
-  padding: 2px 8px;
-  border-radius: 4px;
-}
-.progress-bar {
-  height: 12px;
-  background-color: #f0f2f5;
-  border-radius: 6px;
-  overflow: hidden;
-  margin-bottom: 8px;
-  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-.progress {
-  height: 100%;
-  transition: width 0.8s ease;
-  border-radius: 6px;
-  background-image: linear-gradient(to right, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0));
-}
-.channel-description {
-  font-size: 12px;
-  color: #909399;
-  margin-top: 6px;
-  text-align: right;
-  font-style: italic;
-}
-
-/* 宽度图表样式 */
-.width-chart {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.width-bar {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  margin-bottom: 12px;
-  padding: 8px;
-  background-color: rgba(64, 158, 255, 0.05);
-  border-radius: 8px;
-  border: 1px solid rgba(64, 158, 255, 0.1);
-}
-
-.bar-label {
-  font-size: 14px;
-  color: #303133;
-  font-weight: 500;
-  min-width: 60px;
-}
-
-.bar-container {
-  flex: 1;
-  height: 24px;
-  background: linear-gradient(135deg, #f5f7fa 0%, #e4e7ed 100%);
-  border-radius: 12px;
-  overflow: hidden;
-  position: relative;
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
-  margin-right: 15px;
-}
-
-.bar-fill {
-  height: 100%;
-  background: linear-gradient(90deg, #409eff, #67c23a);
-  border-radius: 12px;
-  transition: width 1s ease;
-  position: relative;
-}
-
-.bar-fill::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
-  animation: shimmer 2s infinite;
-}
-
-@keyframes shimmer {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(100%); }
-}
-
-.bar-value {
-  font-size: 16px;
-  color: #409eff;
-  font-weight: 700;
-  min-width: 70px;
-  text-align: center;
-  font-family: 'Courier New', monospace;
-  background: linear-gradient(135deg, #409eff, #67c23a);
-  color: white;
-  padding: 6px 12px;
-  border-radius: 6px;
-  box-shadow: 0 2px 8px rgba(64, 158, 255, 0.3);
-  border: 2px solid rgba(255, 255, 255, 0.3);
-}
-
-/* 比例图表样式 */
-.ratio-chart {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-}
-
-.ratio-item {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.ratio-label {
-  font-size: 14px;
-  color: #303133;
-  font-weight: 500;
-}
-
-.ratio-progress {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.progress-bar {
-  flex: 1;
-  height: 20px;
-  background: linear-gradient(135deg, #f5f7fa 0%, #e4e7ed 100%);
-  border-radius: 10px;
-  overflow: hidden;
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.progress-fill {
-  height: 100%;
-  background: linear-gradient(90deg, #e6a23c, #f56c6c);
-  border-radius: 10px;
-  transition: width 1s ease;
-  position: relative;
-}
-
-.progress-fill::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
-  animation: shimmer 2s infinite;
-}
-
-.ratio-value {
-  font-size: 13px;
-  color: #303133;
-  font-weight: 600;
-  min-width: 60px;
-  text-align: right;
-  font-family: 'Courier New', monospace;
-}
-
-/* 表格样式 */
-.table-container {
-  margin-bottom: 0;
-}
-
-.table-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 15px;
-  padding: 10px 15px;
-  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
-  border-radius: 8px;
-  border: 1px solid #bae6fd;
-}
-
-.table-header h4 {
-  margin: 0;
-  font-size: 16px;
-  font-weight: 600;
-  color: #303133;
-}
-
-.measurement-table {
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-}
-
-.measurement-table :deep(.el-table__header) {
-  background: linear-gradient(135deg, #409eff, #67c23a) !important;
-  display: table-header-group !important;
-}
-
-.measurement-table :deep(.el-table__header th) {
-  background: transparent !important;
-  color: #303133 !important; /* 改为深色 */
-  font-weight: 600 !important;
-  border-bottom: none !important;
-  text-align: center !important;
-  padding: 12px 0 !important;
-}
-
-.measurement-table :deep(.el-table__body tr:hover) {
-  background-color: rgba(64, 158, 255, 0.05);
-}
-
-.measurement-table :deep(.el-table__body td) {
-  border-bottom: 1px solid #ebeef5;
-}
-
-.table-value {
-  font-family: 'Courier New', monospace;
-  font-weight: 600;
-  color: #409eff;
-  background-color: rgba(64, 158, 255, 0.1);
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 14px;
-}
-
-/* 置信度显示样式 */
-.confidence-display {
-  display: flex;
-    flex-direction: column;
-    gap: 10px;
-  align-items: center;
-}
-
-.confidence-value {
-  font-size: 24px;
-  font-weight: 700;
-  color: #67c23a;
-  font-family: 'Courier New', monospace;
-  background: linear-gradient(135deg, #67c23a, #85ce61);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.confidence-bar {
-  width: 100%;
-  height: 20px;
-  background: linear-gradient(135deg, #f5f7fa 0%, #e4e7ed 100%);
-  border-radius: 10px;
-  overflow: hidden;
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.confidence-fill {
-  height: 100%;
-  background: linear-gradient(90deg, #67c23a, #85ce61);
-  border-radius: 10px;
-  transition: width 1s ease;
-  position: relative;
-}
-
-.confidence-fill::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
-  animation: shimmer 2s infinite;
-}
-
-/* 处理图片样式 */
-.process-images {
-  margin-top: 25px;
-  padding-top: 20px;
-  border-top: 2px solid #f0f2f5;
 }
 </style>

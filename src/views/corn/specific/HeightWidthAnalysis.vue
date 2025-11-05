@@ -6,6 +6,7 @@
     </div>
 
     <div class="content-wrapper">
+      <!-- 图片上传区域 -->
       <div class="upload-section">
         <div class="section-title">
           <el-icon><Upload /></el-icon>
@@ -34,6 +35,87 @@
           </div>
         </div>
       </div>
+
+      <!-- 分析结果区域 -->
+      <div class="result-section">
+        <div class="section-header">
+          <h2>测量结果</h2>
+          <el-button 
+            type="primary" 
+            @click="copyAllData"
+            :icon="CopyDocument"
+            size="small"
+            :disabled="!analysisResult"
+          >
+            一键复制数据
+          </el-button>
+        </div>
+
+        <!-- 测量数据显示 -->
+        <div class="data-section">
+          <div class="section-title-wrapper">
+            <div class="section-icon">
+              <el-icon><Histogram /></el-icon>
+            </div>
+            <h3 class="section-title">长度/宽度测量数据</h3>
+            <div class="section-description">玉米长度和宽度测量结果（单位：cm）</div>
+          </div>
+          
+          <div class="section-content">
+            <div class="measurement-result">
+              <el-row :gutter="15">
+                <!-- 长度 -->
+                <el-col :span="8">
+                  <div class="info-card">
+                    <div class="card-header">
+                      <el-icon><TrendCharts /></el-icon>
+                      <span>长度</span>
+                    </div>
+                    <div class="card-content">
+                      <div class="measurement-display">
+                        <div class="measurement-value">{{ analysisResult ? analysisResult.length?.toFixed(4) : '--' }}</div>
+                        <div class="measurement-unit">cm</div>
+                      </div>
+                    </div>
+                  </div>
+                </el-col>
+
+                <!-- 中心宽度 -->
+                <el-col :span="8">
+                  <div class="info-card">
+                    <div class="card-header">
+                      <el-icon><Histogram /></el-icon>
+                      <span>中心宽度</span>
+                    </div>
+                    <div class="card-content">
+                      <div class="measurement-display">
+                        <div class="measurement-value">{{ analysisResult ? analysisResult.center_width?.toFixed(4) : '--' }}</div>
+                        <div class="measurement-unit">cm</div>
+                      </div>
+                    </div>
+                  </div>
+                </el-col>
+
+                <!-- 中间三分之一最大宽度 -->
+                <el-col :span="8">
+                  <div class="info-card">
+                    <div class="card-header">
+                      <el-icon><PieChart /></el-icon>
+                      <span>中间三分之一最大宽度</span>
+                    </div>
+                    <div class="card-content">
+                      <div class="measurement-display">
+                        <div class="measurement-value">{{ analysisResult ? analysisResult.max_width_mid_third?.toFixed(4) : '--' }}</div>
+                        <div class="measurement-unit">cm</div>
+                      </div>
+                    </div>
+                  </div>
+                </el-col>
+              </el-row>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- 识别按钮 -->
@@ -47,84 +129,6 @@
         <el-icon class="button-icon"><Search /></el-icon>
         <span>{{ isLoading ? '测量中...' : '开始测量' }}</span>
       </el-button>
-    </div>
-
-    <!-- 数据统计和图表区域 -->
-    <div v-if="analysisResult" class="data-analysis-section">
-      <div class="section-header">
-        <h2>测量结果</h2>
-        <el-button 
-          type="primary" 
-          @click="copyAllData"
-          :icon="CopyDocument"
-          size="large"
-        >
-          一键复制数据
-        </el-button>
-      </div>
-
-      <!-- 测量数据显示 -->
-      <div class="data-section">
-        <div class="section-title-wrapper">
-          <div class="section-icon">
-            <el-icon><Histogram /></el-icon>
-          </div>
-          <h3 class="section-title">长度/宽度测量数据</h3>
-          <div class="section-description">玉米长度和宽度测量结果（单位：cm）</div>
-        </div>
-        
-        <div class="section-content">
-          <el-row :gutter="25">
-            <!-- 长度 -->
-            <el-col :xs="24" :sm="8" :md="8">
-              <div class="info-card">
-                <div class="card-header">
-                  <el-icon><TrendCharts /></el-icon>
-                  <span>长度</span>
-                </div>
-                <div class="card-content">
-                  <div class="measurement-display">
-                    <div class="measurement-value">{{ analysisResult.length?.toFixed(4) || '--' }}</div>
-                    <div class="measurement-unit">cm</div>
-                  </div>
-                </div>
-              </div>
-            </el-col>
-
-            <!-- 中心宽度 -->
-            <el-col :xs="24" :sm="8" :md="8">
-              <div class="info-card">
-                <div class="card-header">
-                  <el-icon><Histogram /></el-icon>
-                  <span>中心宽度</span>
-                </div>
-                <div class="card-content">
-                  <div class="measurement-display">
-                    <div class="measurement-value">{{ analysisResult.center_width?.toFixed(4) || '--' }}</div>
-                    <div class="measurement-unit">cm</div>
-                  </div>
-                </div>
-              </div>
-            </el-col>
-
-            <!-- 中间三分之一最大宽度 -->
-            <el-col :xs="24" :sm="8" :md="8">
-              <div class="info-card">
-                <div class="card-header">
-                  <el-icon><PieChart /></el-icon>
-                  <span>中间三分之一最大宽度</span>
-                </div>
-                <div class="card-content">
-                  <div class="measurement-display">
-                    <div class="measurement-value">{{ analysisResult.max_width_mid_third?.toFixed(4) || '--' }}</div>
-                    <div class="measurement-unit">cm</div>
-                  </div>
-                </div>
-              </div>
-            </el-col>
-          </el-row>
-        </div>
-      </div>
     </div>
 
     <!-- 弹窗预览大图 -->
@@ -429,13 +433,17 @@ onBeforeUnmount(() => {
 
 .content-wrapper {
   display: flex;
-  flex: 1;
   gap: 25px;
   margin-bottom: 25px;
+  flex: 1;
+  height: 500px;
+  min-height: 500px;
+  align-items: stretch;
 }
 
+/* 图片上传区域样式 */
 .upload-section {
-  flex: 1;  /* 上传区域占满宽度 */
+  flex: 1;
   display: flex;
   flex-direction: column;
   background-color: #ffffff;
@@ -443,7 +451,10 @@ onBeforeUnmount(() => {
   overflow: hidden;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
   transition: all 0.3s ease;
-  width: 100%;
+  min-width: 300px;
+  max-width: 500px;
+  height: 500px;
+  min-height: 500px;
 }
 
 .upload-section:hover {
@@ -477,7 +488,8 @@ onBeforeUnmount(() => {
   border: 2px dashed #d9ecff;
   border-radius: 10px;
   margin: 20px;
-  min-height: 300px;
+  height: 420px;
+  min-height: 420px;
   cursor: pointer;
   position: relative;
   transition: all 0.3s ease;
@@ -548,6 +560,8 @@ onBeforeUnmount(() => {
 .image-preview {
   width: 100%;
   height: 100%;
+  min-height: 420px;
+  max-height: 420px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -556,7 +570,9 @@ onBeforeUnmount(() => {
 
 .image-preview img {
   max-width: 100%;
-  max-height: 100%;
+  max-height: 380px;
+  width: auto;
+  height: auto;
   object-fit: contain;
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
@@ -581,31 +597,37 @@ onBeforeUnmount(() => {
   transform: translateY(0);
 }
 
-.data-analysis-section {
-  margin-top: 30px;
-  padding: 25px;
+/* 分析结果区域样式 */
+.result-section {
+  flex: 2;
+  display: flex;
+  flex-direction: column;
   background-color: #ffffff;
-  border-radius: 16px;
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
   transition: all 0.3s ease;
+  min-width: 400px;
+  height: 500px;
+  min-height: 500px;
 }
 
-.data-analysis-section:hover {
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+.result-section:hover {
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
   transform: translateY(-2px);
 }
 
-.section-header {
+.result-section .section-header {
+  padding: 15px 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 25px;
-  padding-bottom: 15px;
-  border-bottom: 2px solid #f0f2f5;
+  border-bottom: 1px solid #ebeef5;
+  background: linear-gradient(to right, #f0f9eb, #ecf5ff);
 }
 
-.section-header h2 {
-  font-size: 24px;
+.result-section .section-header h2 {
+  font-size: 20px;
   font-weight: 700;
   color: #303133;
   margin: 0;
@@ -614,161 +636,150 @@ onBeforeUnmount(() => {
   gap: 10px;
 }
 
-.section-header h2::before {
+.result-section .section-header h2::before {
   content: '';
-  width: 4px;
-  height: 24px;
+  width: 3px;
+  height: 20px;
   background: linear-gradient(135deg, #409eff, #67c23a);
   border-radius: 2px;
 }
 
-.data-section {
-  margin-bottom: 35px;
+.result-section .data-section {
+  margin: 20px;
   background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
-  border-radius: 16px;
-  padding: 25px;
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
   transition: all 0.3s ease;
   border: 1px solid #ebeef5;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
-.data-section:hover {
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
-  transform: translateY(-2px);
-}
-
-.section-title-wrapper {
+.result-section .section-title-wrapper {
   display: flex;
   align-items: center;
-  gap: 15px;
-  margin-bottom: 20px;
-  padding-bottom: 15px;
-  border-bottom: 2px solid #f0f2f5;
+  gap: 12px;
+  margin-bottom: 15px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #f0f2f5;
   flex-wrap: wrap;
 }
 
-.section-icon {
-  width: 50px;
-  height: 50px;
+.result-section .section-icon {
+  width: 40px;
+  height: 40px;
   background: linear-gradient(135deg, #409eff, #67c23a);
-  border-radius: 12px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 12px rgba(64, 158, 255, 0.3);
+  box-shadow: 0 3px 10px rgba(64, 158, 255, 0.3);
 }
 
-.section-icon .el-icon {
-  font-size: 24px;
+.result-section .section-icon .el-icon {
+  font-size: 20px;
   color: white;
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
 }
 
-.section-title {
-  font-size: 22px;
+.result-section .section-title {
+  font-size: 18px;
   font-weight: 700;
   color: #303133;
   margin: 0;
 }
 
-.section-description {
-  font-size: 14px;
+.result-section .section-description {
+  font-size: 13px;
   color: #909399;
-  margin-left: 65px;
+  margin-left: 52px;
   margin-top: -15px;
   flex: 1;
 }
 
-.section-content {
+.result-section .section-content {
   padding: 0;
   background-color: transparent;
   border-radius: 0;
   box-shadow: none;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
-.chart-card {
+.measurement-result {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  flex: 1;
+}
+
+.measurement-result .el-row {
+  flex: 1;
+  display: flex;
+  align-items: stretch;
+  height: 100%;
+}
+
+.measurement-result .el-col {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* 测量数据美化样式 */
+.result-section .info-card {
+  padding: 25px 20px;
   background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
-  border-radius: 12px;
-  padding: 20px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  border-radius: 16px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
   border: 1px solid #ebeef5;
-  transition: all 0.3s ease;
+  transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
   position: relative;
   overflow: hidden;
-  margin-bottom: 25px;
+  height: 100%;
+  text-align: center;
+  backdrop-filter: blur(10px);
+  display: flex;
+  flex-direction: column;
+  flex: 1;
 }
 
-.chart-card::before {
+.result-section .info-card::before {
   content: '';
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
-  height: 3px;
+  height: 5px;
   background: linear-gradient(90deg, #409eff, #67c23a, #e6a23c);
-  border-radius: 12px 12px 0 0;
+  border-radius: 16px 16px 0 0;
 }
 
-.chart-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+.result-section .info-card:hover {
+  transform: translateY(-5px) scale(1.02);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
 }
 
-.chart-title {
+.result-section .info-card .card-header {
   display: flex;
   align-items: center;
-  gap: 12px;
+  justify-content: center;
+  gap: 10px;
   margin-bottom: 20px;
-  font-size: 18px;
-  font-weight: 600;
-  color: #303133;
+  padding-bottom: 15px;
+  border-bottom: 2px solid rgba(64, 158, 255, 0.1);
 }
 
-.chart-title .el-icon {
-  font-size: 22px;
+.result-section .info-card .card-header .el-icon {
+  font-size: 24px;
   color: #409eff;
   filter: drop-shadow(0 2px 4px rgba(64, 158, 255, 0.3));
 }
 
-.chart-content {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-}
-
-.measurement-cards {
-  margin-bottom: 0;
-}
-
-.measurement-card {
-  padding: 20px;
-  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
-  border-radius: 12px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-  margin-bottom: 15px;
-  border: 1px solid #ebeef5;
-  transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
-}
-
-.measurement-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: linear-gradient(90deg, #409eff, #67c23a);
-  border-radius: 12px 12px 0 0;
-}
-
-.measurement-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
-}
-
-.segment-number {
+.result-section .info-card .card-header span {
   font-size: 18px;
   font-weight: 700;
   color: #303133;
@@ -778,235 +789,52 @@ onBeforeUnmount(() => {
   background-clip: text;
 }
 
-.measurement-item {
+.result-section .info-card .card-content { 
+  display: flex; 
+  flex-direction: column; 
+  gap: 15px; 
+  flex: 1;
+  justify-content: center;
+}
+
+.result-section .measurement-display {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 0;
-  border-bottom: 1px solid rgba(64, 158, 255, 0.1);
+  align-items: baseline;
+  justify-content: center;
+  gap: 8px;
+  padding: 20px 0;
 }
 
-.measurement-item:last-child {
-  border-bottom: none;
-}
-
-.measurement-label {
-  font-size: 14px;
-  color: #606266;
-  font-weight: 500;
-}
-
-.measurement-value {
-  font-size: 16px;
+.result-section .measurement-value {
+  font-size: 32px;
   font-weight: 700;
   color: #409eff;
   font-family: 'Courier New', monospace;
-  background-color: rgba(64, 158, 255, 0.1);
-  padding: 4px 8px;
-  border-radius: 4px;
-}
-
-.info-card {
-  padding: 20px;
-  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
-  border-radius: 12px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-  border: 1px solid #ebeef5;
-  transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
-  height: 100%;
-}
-
-.info-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: linear-gradient(90deg, #409eff, #67c23a, #e6a23c);
-  border-radius: 12px 12px 0 0;
-}
-
-.info-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
-}
-
-.info-card .card-header {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 15px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid #ebeef5;
-}
-
-.info-card .card-header .el-icon {
-  font-size: 20px;
-  color: #409eff;
-}
-
-.info-card .card-header span {
-  font-size: 16px;
-  font-weight: 600;
-  color: #303133;
-}
-
-.info-card .card-content {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.info-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 0;
-  border-bottom: 1px solid rgba(64, 158, 255, 0.1);
-}
-
-.info-item:last-child {
-  border-bottom: none;
-}
-
-.info-label {
-  font-size: 14px;
-  color: #606266;
-  font-weight: 500;
-}
-
-.info-value {
-  font-size: 16px;
-  font-weight: 700;
-  color: #409eff;
-  font-family: 'Courier New', monospace;
-}
-
-.info-value.shape-type {
   background: linear-gradient(135deg, #409eff, #67c23a);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  font-weight: 700;
 }
 
-.info-value.confidence {
-  color: #67c23a;
-  background-color: rgba(103, 194, 58, 0.1);
-  padding: 4px 8px;
-  border-radius: 4px;
-}
-
-.measurement-card .card-content {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.measurement-card .card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 10px;
-}
-
-.width-summary {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 15px;
-  padding: 12px;
-  background-color: rgba(64, 158, 255, 0.05);
-  border-radius: 8px;
-  border: 1px solid rgba(64, 158, 255, 0.1);
-}
-
-.summary-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-}
-
-.summary-label {
-  font-size: 12px;
-  color: #606266;
-  font-weight: 500;
-  margin-bottom: 4px;
-}
-
-.summary-value {
-  font-size: 16px;
-  font-weight: 700;
-  color: #409eff;
-  font-family: 'Courier New', monospace;
-}
-
-.analysis-images {
-  margin-top: 25px;
-  padding-top: 20px;
-  border-top: 2px solid #f0f2f5;
-}
-
-.images-title {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 15px;
+.result-section .measurement-unit {
   font-size: 18px;
-  font-weight: 600;
-  color: #303133;
+  color: #909399;
+  font-weight: 500;
 }
 
-.images-title .el-icon {
-  font-size: 20px;
-  color: #409eff;
-}
-
-.images-grid {
-  margin-bottom: 0;
-}
-
-.image-row {
-  margin-bottom: 0;
-}
-
-.image-card {
-  border-radius: 10px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-  margin-bottom: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-}
-
-.image-title {
-  text-align: center;
-  font-size: 15px;
-  font-weight: 600;
-  color: #303133;
-  margin-bottom: 8px;
-  margin-top: 4px;
-}
-
-.result-img {
-  max-height: 180px;
-  width: auto;
-  max-width: 100%;
-  object-fit: contain;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.10);
-  cursor: pointer;
-  transition: transform 0.2s;
-}
-
-.result-img:hover {
-  transform: scale(1.04);
-  box-shadow: 0 4px 16px rgba(64,158,255,0.18);
+@media (max-width: 992px) {
+  .content-wrapper {
+    flex-direction: column;
+  }
+  
+  .upload-section,
+  .result-section {
+    max-width: 100%;
+  }
+  
+  .upload-section {
+    margin-bottom: 20px;
+  }
 }
 
 .action-buttons {

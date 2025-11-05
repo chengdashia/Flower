@@ -6,6 +6,7 @@
     </div>
 
     <div class="content-wrapper">
+      <!-- 图片上传区域 -->
       <div class="upload-section">
         <div class="section-title">
           <el-icon><Upload /></el-icon>
@@ -34,6 +35,80 @@
           </div>
         </div>
       </div>
+
+      <!-- 分析结果区域 -->
+      <div class="result-section">
+        <div class="section-header">
+          <h2>分析结果</h2>
+          <el-button 
+            type="primary" 
+            @click="copyAllData"
+            :icon="CopyDocument"
+            size="small"
+            :disabled="!analysisResult"
+          >
+            一键复制数据
+          </el-button>
+        </div>
+
+        <!-- 穗行数量统计 -->
+        <div class="data-section">
+          <div class="section-title-wrapper">
+            <div class="section-icon">
+              <el-icon><DataAnalysis /></el-icon>
+            </div>
+            <h3 class="section-title">穗行数量统计</h3>
+            <div class="section-description">检测到的玉米穗行数量</div>
+          </div>
+          
+          <div class="section-content">
+            <el-row :gutter="15">
+              <el-col :span="24">
+                <div class="info-card">
+                  <div class="card-header">
+                    <el-icon><Histogram /></el-icon>
+                    <span>检测结果</span>
+                  </div>
+                  <div class="card-content">
+                    <div class="ear-row-display">
+                      <div class="ear-row-number">{{ analysisResult ? analysisResult.number_of_ears : '--' }}</div>
+                      <div class="ear-row-label">穗行</div>
+                    </div>
+                  </div>
+                </div>
+              </el-col>
+            </el-row>
+          </div>
+        </div>
+
+        <!-- 结果图片展示 -->
+        <div class="data-section">
+          <div class="section-title-wrapper">
+            <div class="section-icon">
+              <el-icon><DataAnalysis /></el-icon>
+            </div>
+            <h3 class="section-title">分析结果图片</h3>
+            <div class="section-description">标注了穗行检测结果的分析图片</div>
+          </div>
+          
+          <div class="section-content">
+            <el-row :gutter="15" class="image-row">
+              <el-col :span="24">
+                <el-card class="image-card">
+                  <div class="image-container" @click="openPreview(getImageUrl(analysisResult?.result_image))" v-if="analysisResult && analysisResult.result_image">
+                    <img 
+                      :src="getImageUrl(analysisResult.result_image)" 
+                      alt="检测结果图" 
+                      class="result-img" 
+                    />
+                  </div>
+                  <div v-else class="no-data">暂无数据</div>
+                </el-card>
+              </el-col>
+            </el-row>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- 识别按钮 -->
@@ -47,91 +122,6 @@
         <el-icon class="button-icon"><Search /></el-icon>
         <span>{{ isLoading ? '识别中...' : '开始识别' }}</span>
       </el-button>
-    </div>
-
-    <!-- 数据统计和图表区域 -->
-    <div v-if="analysisResult" class="data-analysis-section">
-      <div class="section-header">
-        <h2>分析结果</h2>
-        <el-button 
-          type="primary" 
-          @click="copyAllData"
-          :icon="CopyDocument"
-          size="large"
-        >
-          一键复制数据
-        </el-button>
-      </div>
-
-      <!-- 穗行数量统计 -->
-      <div class="data-section">
-        <div class="section-title-wrapper">
-          <div class="section-icon">
-            <el-icon><DataAnalysis /></el-icon>
-          </div>
-          <h3 class="section-title">穗行数量统计</h3>
-          <div class="section-description">检测到的玉米穗行数量</div>
-          <el-button 
-            type="primary" 
-            @click="copyEarRowData"
-            :icon="CopyDocument"
-            size="small"
-            style="margin-left: auto;"
-          >
-            复制数据
-          </el-button>
-        </div>
-        
-        <div class="section-content">
-          <el-row :gutter="25">
-            <el-col :xs="24" :sm="24" :md="24">
-              <div class="info-card">
-                <div class="card-header">
-                  <el-icon><Histogram /></el-icon>
-                  <span>检测结果</span>
-                </div>
-                <div class="card-content">
-                  <div class="ear-row-display">
-                    <div class="ear-row-number">{{ analysisResult.number_of_ears }}</div>
-                    <div class="ear-row-label">穗行</div>
-                  </div>
-                </div>
-              </div>
-            </el-col>
-          </el-row>
-        </div>
-      </div>
-
-      <!-- 结果图片展示 -->
-      <div class="data-section">
-        <div class="section-title-wrapper">
-          <div class="section-icon">
-            <el-icon><DataAnalysis /></el-icon>
-          </div>
-          <h3 class="section-title">分析结果图片</h3>
-          <div class="section-description">标注了穗行检测结果的分析图片</div>
-        </div>
-        
-        <div class="section-content">
-          <div class="result-images">
-            <div class="images-grid" v-if="analysisResult.result_image">
-              <el-row :gutter="18" class="image-row">
-                <el-col :xs="24" :sm="24" :md="24">
-                  <el-card class="image-card">
-                    <div class="image-title">检测结果图</div>
-                    <img 
-                      :src="getImageUrl(analysisResult.result_image)" 
-                      alt="检测结果图" 
-                      class="result-img" 
-                      @click="openPreview(getImageUrl(analysisResult.result_image))" 
-                    />
-                  </el-card>
-                </el-col>
-              </el-row>
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
 
     <!-- 弹窗预览大图 -->
@@ -357,7 +347,13 @@ const getImageUrl = (imagePath) => {
 const copyAllData = () => {
   if (!analysisResult.value) return
 
-  const dataText = `玉米穗行分析数据\n\n穗行数量: ${analysisResult.value.number_of_ears} 行\n\n结果图片: ${analysisResult.value.result_image}\n\n分析时间: ${new Date().toLocaleString('zh-CN')}`
+  const dataText = `玉米穗行分析数据
+
+穗行数量: ${analysisResult.value.number_of_ears} 行
+
+结果图片: ${analysisResult.value.result_image}
+
+分析时间: ${new Date().toLocaleString('zh-CN')}`
 
   copyToClipboard(dataText, '数据复制成功')
 }
@@ -366,7 +362,11 @@ const copyAllData = () => {
 const copyEarRowData = () => {
   if (!analysisResult.value) return
   
-  const dataText = `穗行数量统计\n\n检测到的穗行数量: ${analysisResult.value.number_of_ears} 行\n\n复制时间: ${new Date().toLocaleString('zh-CN')}`
+  const dataText = `穗行数量统计
+
+检测到的穗行数量: ${analysisResult.value.number_of_ears} 行
+
+复制时间: ${new Date().toLocaleString('zh-CN')}`
   
   copyToClipboard(dataText, '穗行数据复制成功')
 }
@@ -422,15 +422,15 @@ onBeforeUnmount(() => {
   display: flex;
   flex-direction: column;
   height: 100%;
-  padding: 20px;
+  padding: 15px;
   background-color: #f5f7fa;
   background-image: linear-gradient(135deg, #f5f7fa 0%, #f0f4f8 100%);
 }
 
 .page-header {
   text-align: center;
-  margin-bottom: 25px;
-  padding-bottom: 20px;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
   position: relative;
 }
 
@@ -451,13 +451,13 @@ onBeforeUnmount(() => {
 
 .content-wrapper {
   display: flex;
-  flex: 1;
   gap: 25px;
   margin-bottom: 25px;
 }
 
+/* 图片上传区域样式 */
 .upload-section {
-  flex: 1;  /* 上传区域占满宽度 */
+  flex: 1;
   display: flex;
   flex-direction: column;
   background-color: #ffffff;
@@ -465,7 +465,8 @@ onBeforeUnmount(() => {
   overflow: hidden;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
   transition: all 0.3s ease;
-  width: 100%;
+  min-width: 300px;
+  max-width: 500px;
 }
 
 .upload-section:hover {
@@ -474,7 +475,7 @@ onBeforeUnmount(() => {
 }
 
 .section-title {
-  padding: 15px 20px;
+  padding: 12px 18px;
   font-size: 17px;
   font-weight: bold;
   border-bottom: 1px solid #ebeef5;
@@ -495,11 +496,11 @@ onBeforeUnmount(() => {
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 20px;
+  padding: 15px;
   border: 2px dashed #d9ecff;
   border-radius: 10px;
-  margin: 20px;
-  min-height: 300px;
+  margin: 15px;
+  min-height: 280px;
   cursor: pointer;
   position: relative;
   transition: all 0.3s ease;
@@ -603,31 +604,35 @@ onBeforeUnmount(() => {
   transform: translateY(0);
 }
 
-.data-analysis-section {
-  margin-top: 30px;
-  padding: 25px;
+/* 分析结果区域样式 */
+.result-section {
+  flex: 2;
+  display: flex;
+  flex-direction: column;
   background-color: #ffffff;
-  border-radius: 16px;
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
   transition: all 0.3s ease;
+  min-width: 400px;
 }
 
-.data-analysis-section:hover {
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+.result-section:hover {
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
   transform: translateY(-2px);
 }
 
-.section-header {
+.result-section .section-header {
+  padding: 15px 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 25px;
-  padding-bottom: 15px;
-  border-bottom: 2px solid #f0f2f5;
+  border-bottom: 1px solid #ebeef5;
+  background: linear-gradient(to right, #f0f9eb, #ecf5ff);
 }
 
-.section-header h2 {
-  font-size: 24px;
+.result-section .section-header h2 {
+  font-size: 20px;
   font-weight: 700;
   color: #303133;
   margin: 0;
@@ -636,161 +641,121 @@ onBeforeUnmount(() => {
   gap: 10px;
 }
 
-.section-header h2::before {
+.result-section .section-header h2::before {
   content: '';
-  width: 4px;
-  height: 24px;
+  width: 3px;
+  height: 20px;
   background: linear-gradient(135deg, #409eff, #67c23a);
   border-radius: 2px;
 }
 
-.data-section {
-  margin-bottom: 35px;
+.result-section .data-section {
+  margin: 20px;
   background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
-  border-radius: 16px;
-  padding: 25px;
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
   transition: all 0.3s ease;
   border: 1px solid #ebeef5;
 }
 
-.data-section:hover {
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
-  transform: translateY(-2px);
-}
-
-.section-title-wrapper {
+.result-section .section-title-wrapper {
   display: flex;
   align-items: center;
-  gap: 15px;
-  margin-bottom: 20px;
-  padding-bottom: 15px;
-  border-bottom: 2px solid #f0f2f5;
+  gap: 12px;
+  margin-bottom: 15px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #f0f2f5;
   flex-wrap: wrap;
 }
 
-.section-icon {
-  width: 50px;
-  height: 50px;
+.result-section .section-icon {
+  width: 40px;
+  height: 40px;
   background: linear-gradient(135deg, #409eff, #67c23a);
-  border-radius: 12px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 12px rgba(64, 158, 255, 0.3);
+  box-shadow: 0 3px 10px rgba(64, 158, 255, 0.3);
 }
 
-.section-icon .el-icon {
-  font-size: 24px;
+.result-section .section-icon .el-icon {
+  font-size: 20px;
   color: white;
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
 }
 
-.section-title {
-  font-size: 22px;
+.result-section .section-title {
+  font-size: 18px;
   font-weight: 700;
   color: #303133;
   margin: 0;
 }
 
-.section-description {
-  font-size: 14px;
+.result-section .section-description {
+  font-size: 13px;
   color: #909399;
-  margin-left: 65px;
+  margin-left: 52px;
   margin-top: -15px;
   flex: 1;
 }
 
-.section-content {
+.result-section .section-content {
   padding: 0;
   background-color: transparent;
   border-radius: 0;
   box-shadow: none;
 }
 
-.chart-card {
+/* 穗行数量美化样式 */
+.result-section .info-card {
+  padding: 25px 20px;
   background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
-  border-radius: 12px;
-  padding: 20px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  border-radius: 16px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
   border: 1px solid #ebeef5;
-  transition: all 0.3s ease;
+  transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
   position: relative;
   overflow: hidden;
-  margin-bottom: 25px;
+  height: 100%;
+  text-align: center;
+  backdrop-filter: blur(10px);
 }
 
-.chart-card::before {
+.result-section .info-card::before {
   content: '';
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
-  height: 3px;
+  height: 5px;
   background: linear-gradient(90deg, #409eff, #67c23a, #e6a23c);
-  border-radius: 12px 12px 0 0;
+  border-radius: 16px 16px 0 0;
 }
 
-.chart-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+.result-section .info-card:hover {
+  transform: translateY(-5px) scale(1.02);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
 }
 
-.chart-title {
+.result-section .info-card .card-header {
   display: flex;
   align-items: center;
-  gap: 12px;
+  justify-content: center;
+  gap: 10px;
   margin-bottom: 20px;
-  font-size: 18px;
-  font-weight: 600;
-  color: #303133;
+  padding-bottom: 15px;
+  border-bottom: 2px solid rgba(64, 158, 255, 0.1);
 }
 
-.chart-title .el-icon {
-  font-size: 22px;
+.result-section .info-card .card-header .el-icon {
+  font-size: 24px;
   color: #409eff;
   filter: drop-shadow(0 2px 4px rgba(64, 158, 255, 0.3));
 }
 
-.chart-content {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-}
-
-.measurement-cards {
-  margin-bottom: 0;
-}
-
-.measurement-card {
-  padding: 20px;
-  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
-  border-radius: 12px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-  margin-bottom: 15px;
-  border: 1px solid #ebeef5;
-  transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
-}
-
-.measurement-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: linear-gradient(90deg, #409eff, #67c23a);
-  border-radius: 12px 12px 0 0;
-}
-
-.measurement-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
-}
-
-.segment-number {
+.result-section .info-card .card-header span {
   font-size: 18px;
   font-weight: 700;
   color: #303133;
@@ -800,181 +765,13 @@ onBeforeUnmount(() => {
   background-clip: text;
 }
 
-.measurement-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 0;
-  border-bottom: 1px solid rgba(64, 158, 255, 0.1);
+.result-section .info-card .card-content { 
+  display: flex; 
+  flex-direction: column; 
+  gap: 15px; 
 }
 
-.measurement-item:last-child {
-  border-bottom: none;
-}
-
-.measurement-label {
-  font-size: 14px;
-  color: #606266;
-  font-weight: 500;
-}
-
-.measurement-value {
-  font-size: 16px;
-  font-weight: 700;
-  color: #409eff;
-  font-family: 'Courier New', monospace;
-  background-color: rgba(64, 158, 255, 0.1);
-  padding: 4px 8px;
-  border-radius: 4px;
-}
-
-.info-card {
-  padding: 20px;
-  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
-  border-radius: 12px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-  border: 1px solid #ebeef5;
-  transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
-  height: 100%;
-}
-
-.info-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: linear-gradient(90deg, #409eff, #67c23a, #e6a23c);
-  border-radius: 12px 12px 0 0;
-}
-
-.info-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
-}
-
-.info-card .card-header {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 15px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid #ebeef5;
-}
-
-.info-card .card-header .el-icon {
-  font-size: 20px;
-  color: #409eff;
-}
-
-.info-card .card-header span {
-  font-size: 16px;
-  font-weight: 600;
-  color: #303133;
-}
-
-.info-card .card-content {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.info-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 0;
-  border-bottom: 1px solid rgba(64, 158, 255, 0.1);
-}
-
-.info-item:last-child {
-  border-bottom: none;
-}
-
-.info-label {
-  font-size: 14px;
-  color: #606266;
-  font-weight: 500;
-}
-
-.info-value {
-  font-size: 16px;
-  font-weight: 700;
-  color: #409eff;
-  font-family: 'Courier New', monospace;
-}
-
-.info-value.shape-type {
-  background: linear-gradient(135deg, #409eff, #67c23a);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  font-weight: 700;
-}
-
-.info-value.confidence {
-  color: #67c23a;
-  background-color: rgba(103, 194, 58, 0.1);
-  padding: 4px 8px;
-  border-radius: 4px;
-}
-
-.measurement-card .card-content {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.measurement-card .card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 10px;
-}
-
-.width-summary {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 15px;
-  padding: 12px;
-  background-color: rgba(64, 158, 255, 0.05);
-  border-radius: 8px;
-  border: 1px solid rgba(64, 158, 255, 0.1);
-}
-
-.summary-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-}
-
-.summary-label {
-  font-size: 12px;
-  color: #606266;
-  font-weight: 500;
-  margin-bottom: 4px;
-}
-
-.summary-value {
-  font-size: 16px;
-  font-weight: 700;
-  color: #409eff;
-  font-family: 'Courier New', monospace;
-}
-
-.analysis-images {
-  margin-top: 25px;
-  padding-top: 20px;
-  border-top: 2px solid #f0f2f5;
-}
-
-/* 穗行数量显示样式 */
-.ear-row-display {
+.result-section .ear-row-display {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -983,10 +780,9 @@ onBeforeUnmount(() => {
   text-align: center;
 }
 
-.ear-row-number {
+.result-section .ear-row-number {
   font-size: 72px;
   font-weight: 700;
-  color: #409eff;
   line-height: 1;
   margin-bottom: 15px;
   background: linear-gradient(135deg, #409eff, #67c23a);
@@ -997,76 +793,79 @@ onBeforeUnmount(() => {
   font-family: 'Courier New', monospace;
 }
 
-.ear-row-label {
+.result-section .ear-row-label {
   font-size: 24px;
   font-weight: 600;
   color: #606266;
   margin-top: 10px;
 }
 
-.images-title {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 15px;
-  font-size: 18px;
-  font-weight: 600;
-  color: #303133;
-}
-
-.images-title .el-icon {
-  font-size: 20px;
-  color: #409eff;
-}
-
-.images-grid {
-  margin-bottom: 0;
-}
-
-.image-row {
-  margin-bottom: 0;
-}
-
-.image-card {
-  border-radius: 10px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-  margin-bottom: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-}
-
-.image-title {
-  text-align: center;
-  font-size: 15px;
-  font-weight: 600;
-  color: #303133;
-  margin-bottom: 8px;
-  margin-top: 4px;
-}
-
-.result-img {
-  max-height: 180px;
-  width: auto;
-  max-width: 100%;
-  object-fit: contain;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+/* 图片容器样式 */
+.image-container {
   cursor: pointer;
-  transition: transform 0.2s;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: all 0.3s ease;
+  border-radius: 8px;
+  padding: 8px;
+  background-color: rgba(64, 158, 255, 0.05);
+  border: 1px solid rgba(64, 158, 255, 0.1);
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
 }
 
-.result-img:hover {
-  transform: scale(1.04);
-  box-shadow: 0 4px 16px rgba(64,158,255,0.18);
+.image-container:hover {
+  transform: scale(1.03);
+  background-color: rgba(64, 158, 255, 0.15);
+  box-shadow: 0 4px 16px rgba(64, 158, 255, 0.2);
+}
+
+.result-section .result-img { 
+  max-height: 320px; 
+  width: auto; 
+  max-width: 100%; 
+  object-fit: contain; 
+  border-radius: 8px; 
+  box-shadow: 0 4px 16px rgba(0,0,0,0.12); 
+  transition: all 0.3s ease;
+  display: block;
+  margin: 0 auto;
+}
+
+.result-section .result-img:hover {
+  box-shadow: 0 6px 20px rgba(0,0,0,0.18);
+}
+
+.result-section .no-data {
+  text-align: center;
+  padding: 30px;
+  color: #909399;
+  font-style: italic;
+  font-size: 16px;
+}
+
+@media (max-width: 992px) {
+  .content-wrapper {
+    flex-direction: column;
+  }
+  
+  .upload-section,
+  .result-section {
+    max-width: 100%;
+  }
+  
+  .upload-section {
+    margin-bottom: 20px;
+  }
 }
 
 .action-buttons {
   display: flex;
   justify-content: center;
-  margin: 30px 0;
-  padding: 20px;
+  margin: 20px 0;
+  padding: 15px;
 }
 
 .identify-button {
@@ -1122,216 +921,6 @@ onBeforeUnmount(() => {
 
 .button-icon {
   font-size: 20px;
-}
-
-@media (max-width: 768px) {
-  .content-wrapper {
-    flex-direction: column;
-    gap: 20px;
-  }
-
-  .upload-section, .result-section {
-    flex: 1;
-  }
-
-  .image-grid {
-    flex-direction: column;
-    gap: 15px;
-  }
-
-  .image-item img {
-    max-height: 200px;
-  }
-
-  .data-analysis-section {
-    padding: 20px;
-    margin-top: 20px;
-  }
-
-  .section-header {
-    flex-direction: column;
-    gap: 15px;
-    align-items: flex-start;
-  }
-
-  .section-header h2 {
-    font-size: 20px;
-  }
-
-  .data-section {
-    padding: 20px;
-    margin-bottom: 25px;
-  }
-
-  .section-title-wrapper {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 10px;
-  }
-
-  .section-icon {
-    width: 40px;
-    height: 40px;
-  }
-
-  .section-icon .el-icon {
-    font-size: 20px;
-  }
-
-  .section-title {
-    font-size: 18px;
-  }
-
-  .section-description {
-    margin-left: 0;
-    margin-top: 0;
-  }
-
-  .measurement-card {
-    padding: 15px;
-  }
-
-  .info-card {
-    padding: 15px;
-    margin-bottom: 15px;
-  }
-
-  .width-summary {
-    flex-direction: column;
-    gap: 10px;
-  }
-
-  .summary-item {
-    width: 100%;
-    flex-direction: row;
-    justify-content: space-between;
-  }
-
-  .width-chart {
-    gap: 10px;
-  }
-
-  .width-bar {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
-  }
-
-  .bar-label {
-    min-width: auto;
-  }
-
-  .bar-container {
-    width: 100%;
-  }
-
-  .ratio-chart {
-    gap: 12px;
-  }
-
-  .ratio-item {
-    gap: 6px;
-  }
-
-  .ratio-progress {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
-  }
-
-  .progress-bar {
-    width: 100%;
-  }
-
-  .ratio-value {
-    min-width: auto;
-    text-align: left;
-  }
-
-  .image-row {
-    flex-direction: column;
-    gap: 10px;
-  }
-
-  .image-card {
-    margin-bottom: 10px;
-  }
-
-  .result-img {
-    max-height: 120px;
-  }
-
-  .chart-card {
-    margin-bottom: 15px;
-  }
-
-  .lab-charts {
-    margin-bottom: 15px;
-  }
-
-  .lab-card {
-    padding: 10px;
-    margin-bottom: 10px;
-  }
-
-  .lab-value {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
-  }
-
-  .lab-label {
-    font-size: 14px;
-  }
-
-  .lab-number {
-    font-size: 14px;
-  }
-
-  .chart-title {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
-  }
-
-  .chart-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
-  }
-
-  /* 移动端表格样式 */
-  .measurement-table {
-    font-size: 12px;
-  }
-
-  .measurement-table :deep(.el-table__header th) {
-    font-size: 12px;
-    padding: 8px 4px;
-  }
-
-  .measurement-table :deep(.el-table__body td) {
-    padding: 8px 4px;
-  }
-
-  .table-value {
-    font-size: 12px;
-    padding: 2px 6px;
-  }
-
-  .segment-badge {
-    font-size: 11px;
-    padding: 4px 8px;
-  }
-
-  /* 移动端穗行数量显示样式 */
-  .ear-row-number {
-    font-size: 48px;
-  }
-
-  .ear-row-label {
-    font-size: 18px;
-  }
 }
 
 .custom-preview-dialog .el-dialog {
@@ -1736,5 +1325,15 @@ onBeforeUnmount(() => {
 
 .result-images .images-grid {
   margin-bottom: 0;
+}
+
+.result-images .image-card {
+  margin-bottom: 0;
+}
+
+.result-images .result-img {
+  max-height: 400px;
+  width: 100%;
+  object-fit: contain;
 }
 </style>
